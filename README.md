@@ -115,7 +115,8 @@ O próprio cliente pode ajustar a página dele, sem acesso ao painel.
 A aba **Gestor** reúne o que só o administrador mexe:
 
 - **Segmentos:** a lista de tipos de negócio (Beleza, Pet, Academia…). Você inclui, renomeia e exclui. Excluir não apaga perfis: eles ficam "sem segmento".
-- **Segmento nos perfis:** no editor do perfil, em "Cliente e cobrança". O cliente também pode escolher no painel dele, só entre os segmentos da lista. A lista de perfis tem um filtro por segmento.
+- **Especialidades (v1.7.2):** dentro de cada segmento, os micro segmentos (ex.: Salão de Beleza → Lash Design, Manicure, Cabeleireira). Você inclui, renomeia e exclui no próprio cartão do segmento.
+- **Segmento e especialidades nos perfis:** no editor do perfil, em "Cliente e cobrança": um segmento e as especialidades dele que o perfil faz. O cliente também escolhe no painel dele, só entre os da lista. A lista de perfis filtra por segmento e, depois, refina por especialidade (mostra quem tem qualquer uma das marcadas). O banco descarta sozinho especialidades de outro segmento.
 - **Links e avisos nos painéis dos clientes:** por exemplo, o botão **"Chame o Suporte"** (link, e-mail ou só o número do WhatsApp) ou um aviso ("Manutenção sábado às 22h"). Escolha para quem aparece: todos, alguns segmentos ou alguns perfis. Aparece no topo do painel em que o cliente edita a página; ele vê, mas não altera. Dá para ligar, desligar, editar e excluir.
 
 ### Acesso ao painel

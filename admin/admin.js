@@ -10,6 +10,8 @@
   var estado = {
     perfis: [],
     segmentos: [],      // painel do gestor (v1.7.0)
+    especialidades: [], // dentro de cada segmento (v1.7.2)
+    filtroEsp: [],      // especialidades marcadas no filtro da lista (qualquer uma delas)
     avisos: [],
     filtroSeg: "",      // "" todos · "sem" sem segmento · id
     filtro: "todos",
@@ -428,6 +430,7 @@
     var b = estado.busca.trim().toLowerCase();
     var vis = todos.filter(function (p) {
       if (estado.filtroSeg && (estado.filtroSeg === "sem" ? p.segmento_id : p.segmento_id !== estado.filtroSeg)) return false;
+      if (estado.filtroEsp.length && !estado.filtroEsp.some(function (id) { return (p.especialidades || []).indexOf(id) >= 0; })) return false;
       if (estado.filtro === "vencidos" && (!vencido(p) || p.teste_desde)) return false;   // testes têm filtros próprios
       if (["ativo", "inativo", "rascunho", "teste", "nao-fechou"].indexOf(estado.filtro) >= 0 && statusVisivel(p) !== estado.filtro) return false;
       if (!b) return true;
@@ -449,7 +452,8 @@
       var meta = [el("a", { href: url, target: "_blank", rel: "noopener" }, [icone("fa-solid fa-link"), " /" + p.slug])];
       if (p.cliente) meta.push(el("a", { href: "#/cliente/" + p.cliente.id }, [icone("fa-regular fa-user"), " " + p.cliente.nome]));
       var seg = nomeSegmento(p.segmento_id);
-      if (seg) meta.push(el("span", {}, [icone("fa-solid fa-tag"), " " + seg]));
+      var esps = nomesEspecialidades(p);
+      if (seg) meta.push(el("span", {}, [icone("fa-solid fa-tag"), " " + seg + (esps.length ? " · " + esps.join(", ") : "")]));
       var tv = textoVencimento(p);
       if (tv) meta.push(el("span", { class: tv.classe }, [icone("fa-regular fa-calendar"), tv.texto]));
 
@@ -489,11 +493,30 @@
   }
 
   $("busca").addEventListener("input", function () { estado.busca = this.value; desenharLista(); });
-  $("filtroSegmento").addEventListener("change", function () { estado.filtroSeg = this.value; desenharLista(); });
+  $("filtroSegmento").addEventListener("change", function () { estado.filtroSeg = this.value; estado.filtroEsp = []; desenharFiltroEspecialidades(); desenharLista(); });
 
   // Segmentos (v1.7.0). Se o banco ainda não tiver segmentos, o painel segue funcionando sem eles.
   function carregarSegmentos() {
-    return DB.listarSegmentos().then(function (l) { estado.segmentos = l || []; }, function () { estado.segmentos = []; });
+    return Promise.all([
+      DB.listarSegmentos().then(function (l) { estado.segmentos = l || []; }, function () { estado.segmentos = []; }),
+      DB.listarEspecialidades().then(function (l) { estado.especialidades = l || []; }, function () { estado.especialidades = []; })
+    ]);
+  }
+  function especialidadesDe(segId) { return estado.especialidades.filter(function (e) { return e.segmento_id === segId; }); }
+  function nomesEspecialidades(p) {
+    return (p.especialidades || []).map(function (id) { var e = estado.especialidades.filter(function (x) { return x.id === id; })[0]; return e ? e.nome : null; }).filter(Boolean);
+  }
+  // Chips de especialidades para marcar (editor do perfil): mostra as do segmento escolhido
+  function chipsEspecialidades(segId, marcadas, aoMudar) {
+    var lista = especialidadesDe(segId);
+    if (!segId || !lista.length) return el("div", { class: "dica", text: segId ? "Este segmento ainda não tem especialidades. Cadastre na aba Gestor." : "Escolha o segmento para marcar as especialidades." });
+    return el("div", { class: "esp-chips" }, lista.map(function (e) {
+      var c = el("input", { type: "checkbox" });
+      c.checked = marcadas.indexOf(e.id) >= 0;
+      var rot = el("label", { class: "esp-chip" + (c.checked ? " marcado" : "") }, [c, e.nome]);
+      c.addEventListener("change", function () { rot.classList.toggle("marcado", c.checked); aoMudar(e.id, c.checked); });
+      return rot;
+    }));
   }
   function nomeSegmento(id) {
     var s = id && estado.segmentos.filter(function (x) { return x.id === id; })[0];
@@ -508,6 +531,21 @@
     if (estado.filtroSeg && estado.filtroSeg !== "sem" && !nomeSegmento(estado.filtroSeg)) estado.filtroSeg = "";
     sel.value = estado.filtroSeg;
     sel.hidden = !estado.segmentos.length;
+    desenharFiltroEspecialidades();
+  }
+  // Refinar pela especialidade: aparece depois de escolher um segmento no filtro
+  function desenharFiltroEspecialidades() {
+    var caixa = $("filtroEspecialidades"), lista = estado.filtroSeg && estado.filtroSeg !== "sem" ? especialidadesDe(estado.filtroSeg) : [];
+    estado.filtroEsp = estado.filtroEsp.filter(function (id) { return lista.some(function (e) { return e.id === id; }); });
+    caixa.innerHTML = "";
+    caixa.hidden = !lista.length;
+    lista.forEach(function (e) {
+      caixa.appendChild(el("button", { class: "chip" + (estado.filtroEsp.indexOf(e.id) >= 0 ? " ativo" : ""), type: "button", "aria-pressed": String(estado.filtroEsp.indexOf(e.id) >= 0), onclick: function () {
+        var i = estado.filtroEsp.indexOf(e.id);
+        if (i >= 0) estado.filtroEsp.splice(i, 1); else estado.filtroEsp.push(e.id);
+        desenharFiltroEspecialidades(); desenharLista();
+      } }, [e.nome]));
+    });
   }
   $("filtroStatus").addEventListener("click", function (e) {
     var b = e.target.closest(".chip");
@@ -838,9 +876,27 @@
     sel.appendChild(el("option", { value: "", text: "— Sem segmento —" }));
     estado.segmentos.forEach(function (s) { sel.appendChild(el("option", { value: s.id, text: s.nome })); });
     sel.value = p.segmento_id || "";
-    sel.addEventListener("change", function () { p.segmento_id = sel.value || null; marcarSujo(); });
-    return el("label", {}, ["Segmento", sel, el("div", { class: "dica" }, [
-      "O cliente também pode escolher no painel dele. ", el("a", { href: "#/gestor", text: "Gerenciar segmentos" })])]);
+    var caixaEsp = el("div");
+    function desenharEsp() {
+      caixaEsp.innerHTML = "";
+      caixaEsp.appendChild(chipsEspecialidades(p.segmento_id, p.especialidades || [], function (id, marcada) {
+        var l = (p.especialidades || []).filter(function (x) { return x !== id; });
+        if (marcada) l.push(id);
+        p.especialidades = l; marcarSujo();
+      }));
+    }
+    sel.addEventListener("change", function () {
+      p.segmento_id = sel.value || null;
+      // Especialidades de outro segmento não valem mais
+      p.especialidades = (p.especialidades || []).filter(function (id) { return especialidadesDe(p.segmento_id).some(function (e) { return e.id === id; }); });
+      desenharEsp(); marcarSujo();
+    });
+    desenharEsp();
+    return el("div", { class: "todo" }, [
+      el("label", {}, ["Segmento", sel]),
+      el("div", { class: "rotulo-esp", text: "Especialidades" }), caixaEsp,
+      el("div", { class: "dica" }, ["O cliente também pode escolher no painel dele. ", el("a", { href: "#/gestor", text: "Gerenciar segmentos e especialidades" })])
+    ]);
   }
 
   // Campo "Próximo vencimento" do editor, com o botão que soma 1 mês (vale ao salvar)
@@ -956,7 +1012,7 @@
     var btn = $("btnSalvar");
     btn.disabled = true;
     var p = ed.p, patch = {
-      dados: p.dados, cliente_id: p.cliente_id || null, segmento_id: p.segmento_id || null,
+      dados: p.dados, cliente_id: p.cliente_id || null, segmento_id: p.segmento_id || null, especialidades: p.segmento_id ? (p.especialidades || []) : [],
       vencimento: p.vencimento || null, observacoes: p.observacoes || null
     };
     if (p.slug !== ed.orig.slug) patch.slug = p.slug;
@@ -1040,8 +1096,8 @@
     carregarGestor();
   }
   function carregarGestor() {
-    return Promise.all([DB.listarSegmentos(), DB.listarAvisos(), DB.listar()]).then(function (res) {
-      estado.segmentos = res[0] || []; estado.avisos = res[1] || []; estado.perfis = res[2] || [];
+    return Promise.all([DB.listarSegmentos(), DB.listarAvisos(), DB.listar(), DB.listarEspecialidades()]).then(function (res) {
+      estado.segmentos = res[0] || []; estado.avisos = res[1] || []; estado.perfis = res[2] || []; estado.especialidades = res[3] || [];
       var alvo = $("gestor");
       alvo.innerHTML = "";
       alvo.appendChild(cartaoSegmentos());
@@ -1076,7 +1132,7 @@
     var lista = el("div", { class: "gestor-lista" });
     if (!estado.segmentos.length) lista.appendChild(el("p", { class: "sub", text: "Nenhum segmento ainda." }));
     estado.segmentos.forEach(function (s) {
-      lista.appendChild(el("div", { class: "gestor-linha" }, [
+      lista.appendChild(el("div", { class: "gestor-segmento" }, [el("div", { class: "gestor-linha" }, [
         el("span", { class: "gestor-icone" }, [icone("fa-solid fa-tag")]),
         el("div", { class: "gestor-info" }, [el("strong", { text: s.nome }), el("small", { text: s.total_perfis + (s.total_perfis === 1 ? " perfil" : " perfis") })]),
         el("div", { class: "gestor-acoes" }, [
@@ -1089,19 +1145,49 @@
           el("button", { class: "btn pequeno icone perigo-leve", type: "button", title: "Excluir", "aria-label": "Excluir " + s.nome, onclick: function () {
             confirmar({
               titulo: "Excluir o segmento \"" + s.nome + "\"?",
-              texto: s.total_perfis ? s.total_perfis + (s.total_perfis === 1 ? " perfil fica" : " perfis ficam") + " sem segmento. Nenhum perfil é apagado." : "Nenhum perfil usa este segmento.",
+              texto: (s.total_perfis ? s.total_perfis + (s.total_perfis === 1 ? " perfil fica" : " perfis ficam") + " sem segmento. Nenhum perfil é apagado." : "Nenhum perfil usa este segmento.") +
+                (especialidadesDe(s.id).length ? " As especialidades dele também são excluídas." : ""),
               botao: "Excluir", classe: "perigo"
             }).then(function (sim) {
               if (sim) return DB.excluirSegmento(s.id).then(function () { toast("Segmento excluído."); carregarGestor(); });
             }).catch(falhou);
           } }, [icone("fa-solid fa-trash-can")])
         ])
-      ]));
+      ]), cartaoEspecialidades(s)]));
     });
     return cartao("fa-solid fa-tags", "Segmentos", [
-      el("p", { class: "sub", style: "margin:-6px 0 14px", text: "O tipo de negócio de cada perfil. Você escolhe no editor do perfil; o cliente também pode escolher no painel dele, só entre os segmentos desta lista." }),
+      el("p", { class: "sub", style: "margin:-6px 0 14px", text: "O tipo de negócio de cada perfil e, dentro de cada segmento, as especialidades (ex.: Salão de Beleza → Lash Design, Manicure). Você escolhe no editor do perfil; o cliente também pode escolher no painel dele, só entre os desta lista." }),
       el("div", { class: "gestor-adicionar" }, [nome, el("button", { class: "btn primario", type: "button", onclick: adicionar }, [icone("fa-solid fa-plus"), " Adicionar"])]),
       lista
+    ]);
+  }
+
+  // Especialidades (micro segmentos) dentro de um segmento, no cartão "Segmentos"
+  function cartaoEspecialidades(s) {
+    var nome = el("input", { type: "text", maxlength: "60", placeholder: "Nova especialidade (ex.: Lash Design)", "aria-label": "Nova especialidade em " + s.nome });
+    function adicionar() {
+      DB.salvarEspecialidade(null, s.id, nome.value).then(function () { toast("Especialidade incluída. ✅"); carregarGestor(); }).catch(falhou);
+    }
+    nome.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); adicionar(); } });
+    var tags = el("div", { class: "esp-chips" }, especialidadesDe(s.id).map(function (e) {
+      var usos = estado.perfis.filter(function (p) { return (p.especialidades || []).indexOf(e.id) >= 0; }).length;
+      return el("span", { class: "esp-tag", title: usos + (usos === 1 ? " perfil" : " perfis") }, [
+        el("button", { class: "esp-tag-nome", type: "button", title: "Renomear", onclick: function () {
+          pedirTexto({ titulo: "Renomear especialidade", valor: e.nome, max: 60 }).then(function (v) {
+            if (v == null) return;
+            return DB.salvarEspecialidade(e.id, s.id, v).then(function () { toast("Especialidade renomeada."); carregarGestor(); });
+          }).catch(falhou);
+        } }, [e.nome, el("small", { text: " " + usos })]),
+        el("button", { class: "esp-tag-x", type: "button", title: "Excluir", "aria-label": "Excluir " + e.nome, onclick: function () {
+          confirmar({ titulo: "Excluir a especialidade \"" + e.nome + "\"?", texto: usos ? "Ela sai de " + usos + (usos === 1 ? " perfil" : " perfis") + ". Nenhum perfil é apagado." : "Nenhum perfil usa esta especialidade.", botao: "Excluir", classe: "perigo" }).then(function (sim) {
+            if (sim) return DB.excluirEspecialidade(e.id).then(function () { toast("Especialidade excluída."); carregarGestor(); });
+          }).catch(falhou);
+        } }, [icone("fa-solid fa-xmark")])
+      ]);
+    }));
+    return el("div", { class: "gestor-especialidades" }, [
+      tags,
+      el("div", { class: "gestor-adicionar pequeno" }, [nome, el("button", { class: "btn pequeno", type: "button", onclick: adicionar }, [icone("fa-solid fa-plus"), " Especialidade"])])
     ]);
   }
 

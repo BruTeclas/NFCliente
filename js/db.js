@@ -100,11 +100,20 @@
   }
 
   // Painel do gestor (v1.7.0): mesmas regras do banco
-  function validarSegmento(nome) {
+  function validarSegmento(nome, oQue) {
+    oQue = oQue || "do segmento";
     nome = String(nome == null ? "" : nome).replace(/\s+/g, " ").trim();
-    if (!nome) throw erro("Digite o nome do segmento.");
-    if (nome.length > 60) throw erro("Nome do segmento muito longo (máximo 60 letras).");
+    if (!nome) throw erro("Digite o nome " + oQue + ".");
+    if (nome.length > 60) throw erro("Nome " + oQue + " muito longo (máximo 60 letras).");
     return nome;
+  }
+  // Especialidades do perfil (v1.7.2): só as existentes e do segmento do perfil (o banco faz o mesmo)
+  function limparEspecialidades(p, todas) {
+    var ok = (p.segmento_id && Array.isArray(p.especialidades)) ? p.especialidades.filter(function (id) {
+      return todas.some(function (e) { return e.id === id && e.segmento_id === p.segmento_id; });
+    }) : [];
+    p.especialidades = ok;
+    return p;
   }
   var ICONES_AVISO = ["fa-solid fa-headset", "fa-brands fa-whatsapp", "fa-solid fa-circle-info", "fa-solid fa-triangle-exclamation", "fa-solid fa-link", "fa-solid fa-circle-play", "fa-solid fa-gift"];
   // Só o número do WhatsApp (com DDD) vira link do wa.me; o resto vale como digitado
@@ -439,6 +448,7 @@
             if (slugEmUso(lista, patch.slug, id)) throw erro("O link \"" + patch.slug + "\" já está em uso.");
           }
           Object.assign(p, patch, { updated_at: agora() });
+          limparEspecialidades(p, lerLista("bt_demo_especialidades"));
           gravarLista(CHAVE, lista); return comCliente(p);
         });
       },
@@ -519,9 +529,32 @@
       },
       excluirSegmento: function (id) {
         var perfis = ler();
-        perfis.forEach(function (p) { if (p.segmento_id === id) p.segmento_id = null; });   // igual a "on delete set null"
+        perfis.forEach(function (p) { if (p.segmento_id === id) { p.segmento_id = null; p.especialidades = []; } });   // igual a "on delete set null"
         gravarLista(CHAVE, perfis);
         gravarLista("bt_demo_segmentos", lerLista("bt_demo_segmentos").filter(function (s) { return s.id !== id; }));
+        gravarLista("bt_demo_especialidades", lerLista("bt_demo_especialidades").filter(function (e) { return e.segmento_id !== id; }));
+        return Promise.resolve();
+      },
+      listarEspecialidades: function () {
+        return Promise.resolve(lerLista("bt_demo_especialidades").slice().sort(function (a, b) { return a.nome.localeCompare(b.nome, "pt-BR"); }));
+      },
+      salvarEspecialidade: function (id, segmentoId, nome) {
+        return Promise.resolve().then(function () {
+          nome = validarSegmento(nome, "da especialidade");
+          var lista = lerLista("bt_demo_especialidades"), atual = id ? lista.filter(function (x) { return x.id === id; })[0] : null;
+          var seg = atual ? atual.segmento_id : segmentoId;
+          if (lista.some(function (e) { return e.id !== id && e.segmento_id === seg && e.nome.toLowerCase() === nome.toLowerCase(); })) throw erro("Essa especialidade já existe neste segmento.");
+          if (atual) atual.nome = nome;
+          else { atual = { id: "esp-" + Math.random().toString(36).slice(2, 10), segmento_id: seg, nome: nome, criado_em: agora() }; lista.push(atual); }
+          gravarLista("bt_demo_especialidades", lista);
+          return atual;
+        });
+      },
+      excluirEspecialidade: function (id) {
+        gravarLista("bt_demo_especialidades", lerLista("bt_demo_especialidades").filter(function (e) { return e.id !== id; }));
+        var perfis = ler();
+        perfis.forEach(function (p) { if (Array.isArray(p.especialidades)) p.especialidades = p.especialidades.filter(function (x) { return x !== id; }); });
+        gravarLista(CHAVE, perfis);
         return Promise.resolve();
       },
       listarAvisos: function () { return Promise.resolve(lerLista("bt_demo_avisos")); },
@@ -591,6 +624,7 @@
       if (r.error) {
         var c = r.error.code;
         if (c === "23505" && contexto === "segmento") throw erro("Já existe um segmento com esse nome.");
+        if (c === "23505" && contexto === "especialidade") throw erro("Essa especialidade já existe neste segmento.");
         if (c === "23505") throw erro(contexto === "cliente" ? "Já existe um cliente com esse CPF/CNPJ." : "Esse link já está em uso por outro perfil.", contexto === "cliente" ? "documento" : null);
         if (c === "23514" && (contexto === "segmento" || contexto === "aviso")) throw erro("Algum dado está em formato inválido.");
         if (c === "23514") throw erro(contexto === "cliente" ? "Algum dado do cliente está em formato inválido." : "Link inválido. Use letras minúsculas, números e hífen.");
@@ -768,6 +802,19 @@
       excluirSegmento: function (id) {
         return sb.from("segmentos").delete().eq("id", id).then(function (r) { return checar(r, "segmento"); });
       },
+      listarEspecialidades: function () {
+        return sb.from("especialidades").select("id, segmento_id, nome").order("nome").then(function (r) { return checar(r, "especialidade"); });
+      },
+      salvarEspecialidade: function (id, segmentoId, nome) {
+        return Promise.resolve().then(function () {
+          var nomeOk = validarSegmento(nome, "da especialidade"), q = sb.from("especialidades");
+          return (id ? q.update({ nome: nomeOk }).eq("id", id) : q.insert({ segmento_id: segmentoId, nome: nomeOk }))
+            .select("id, segmento_id, nome").single().then(function (r) { return checar(r, "especialidade"); });
+        });
+      },
+      excluirEspecialidade: function (id) {
+        return sb.from("especialidades").delete().eq("id", id).then(function (r) { return checar(r, "especialidade"); });
+      },
       listarAvisos: function () {
         return sb.from("avisos_clientes").select("*").order("ordem").order("criado_em").then(function (r) { return checar(r, "aviso"); });
       },
@@ -794,7 +841,8 @@
     var d = { demo: false, indisponivel: msg, sessao: function () { return Promise.resolve(null); } };
     ["entrar", "sair", "recuperarSenha", "alterarSenha", "listar", "obter", "criar", "salvar", "excluir", "enviarImagem",
      "removerImagem", "perfilPublico", "listarClientes", "obterCliente", "criarCliente", "salvarCliente", "excluirCliente",
-     "listarSegmentos", "salvarSegmento", "excluirSegmento", "listarAvisos", "salvarAviso", "excluirAviso"]
+     "listarSegmentos", "salvarSegmento", "excluirSegmento", "listarAvisos", "salvarAviso", "excluirAviso",
+     "listarEspecialidades", "salvarEspecialidade", "excluirEspecialidade"]
       .forEach(function (k) { d[k] = falha; });
     return d;
   }

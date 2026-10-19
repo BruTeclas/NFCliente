@@ -107,6 +107,9 @@
       est.avisos = Array.isArray(j.avisos) ? j.avisos : [];
       est.segmentos = Array.isArray(j.segmentos) ? j.segmentos : [];
       est.segmento = est.segOrig = j.segmento_id || "";
+      est.especialidades = Array.isArray(j.especialidades) ? j.especialidades : [];
+      est.esp = Array.isArray(j.minhas_especialidades) ? j.minhas_especialidades.slice() : [];
+      est.espOrig = est.esp.slice().sort().join();
       desenharEditor();
     }).catch(function () { /* opcional */ });
   }
@@ -131,9 +134,34 @@
     sel.appendChild(el("option", { value: "", text: "— Escolha —" }));
     est.segmentos.forEach(function (s) { sel.appendChild(el("option", { value: s.id, text: s.nome })); });
     sel.value = est.segmento || "";
-    sel.addEventListener("change", function () { est.segmento = sel.value; marcarSujo(); });
-    return EditorPerfil.cartao("fa-solid fa-tag", "Segmento do seu negócio", [sel,
-      el("div", { class: "dica", text: "O tipo do seu negócio. Vale quando você clicar em Salvar." })]);
+    var caixaEsp = el("div");
+    function desenharEsp() {
+      caixaEsp.innerHTML = "";
+      var lista = (est.especialidades || []).filter(function (e) { return e.segmento_id === est.segmento; });
+      if (!lista.length) return;
+      caixaEsp.appendChild(el("div", { class: "rotulo-esp", text: "Especialidades (marque as que você faz)" }));
+      caixaEsp.appendChild(el("div", { class: "esp-chips" }, lista.map(function (e) {
+        var c = el("input", { type: "checkbox" });
+        c.checked = (est.esp || []).indexOf(e.id) >= 0;
+        var rot = el("label", { class: "esp-chip" + (c.checked ? " marcado" : "") }, [c, e.nome]);
+        c.addEventListener("change", function () {
+          rot.classList.toggle("marcado", c.checked);
+          est.esp = (est.esp || []).filter(function (x) { return x !== e.id; });
+          if (c.checked) est.esp.push(e.id);
+          marcarSujo();
+        });
+        return rot;
+      })));
+    }
+    sel.addEventListener("change", function () {
+      est.segmento = sel.value;
+      // Especialidades de outro segmento não valem mais
+      est.esp = (est.esp || []).filter(function (id) { return (est.especialidades || []).some(function (e) { return e.id === id && e.segmento_id === est.segmento; }); });
+      desenharEsp(); marcarSujo();
+    });
+    desenharEsp();
+    return EditorPerfil.cartao("fa-solid fa-tag", "Segmento do seu negócio", [sel, caixaEsp,
+      el("div", { class: "dica", text: "O tipo do seu negócio e o que você faz. Vale quando você clicar em Salvar." })]);
   }
 
   // ---------------------------------------------------------------------------
@@ -159,7 +187,8 @@
   }
   var tPrevia;
   function marcarSujo() {
-    est.sujo = JSON.stringify(est.dados) !== est.orig || (est.segmento || "") !== (est.segOrig || "");
+    est.sujo = JSON.stringify(est.dados) !== est.orig || (est.segmento || "") !== (est.segOrig || "") ||
+      (est.esp ? est.esp.slice().sort().join() !== est.espOrig : false);
     $("edSalvo").textContent = est.sujo ? "Alterações não salvas" : "Tudo salvo";
     $("edSalvo").className = "salvo" + (est.sujo ? " pendente" : "");
     clearTimeout(tPrevia);
@@ -174,7 +203,7 @@
     var btn = $("btnSalvar");
     btn.disabled = true; est.salvando = true;
     // O segmento vai junto (o banco confere se é um dos segmentos da lista)
-    var envio = est.segmentos ? Object.assign({}, est.dados, { _segmento_id: est.segmento || "" }) : est.dados;
+    var envio = est.segmentos ? Object.assign({}, est.dados, { _segmento_id: est.segmento || "", _especialidades: est.esp || [] }) : est.dados;
     rpc("cliente_salvar", { p_sessao: est.sessao, p_dados: envio }).then(function (j) {
       if (j && j.erro === "sessao") {
         // Acesso expirou (2 horas) ou o link foi trocado: pede o PIN de novo e salva em seguida
@@ -189,6 +218,7 @@
       est.dados.links = est.dados.links.map(function (l, i) { return l.id ? l : Object.assign({ id: "s" + i + Math.random().toString(36).slice(2, 7) }, l); });
       est.orig = JSON.stringify(est.dados);
       if ("segmento_id" in j) est.segmento = est.segOrig = j.segmento_id || "";
+      if (Array.isArray(j.especialidades)) { est.esp = j.especialidades.slice(); est.espOrig = est.esp.slice().sort().join(); }
       desenharEditor();
       toast("Salvo! Sua página já foi atualizada. ✅");
     }).catch(falhou).then(function () { btn.disabled = false; est.salvando = false; });

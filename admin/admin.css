@@ -326,3 +326,23 @@ label i { color: var(--texto2); width: 16px; text-align: center; }
 .aviso-admin > i { color: var(--primaria); margin-top: 3px; }
 .aviso-admin p { margin: 2px 0 0; color: var(--texto2); font-size: .88rem; white-space: pre-line; }
 .links-admin { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Especialidades (v1.7.2) */
+.gestor-segmento { border: 1px solid var(--linha); border-radius: 12px; padding: 10px 12px; }
+.gestor-segmento > .gestor-linha { border: 0; padding: 0; }
+.gestor-especialidades { margin: 10px 0 0 46px; }
+.gestor-adicionar.pequeno { margin: 8px 0 0; }
+.gestor-adicionar.pequeno input { padding: 7px 10px; font-size: .85rem; }
+.esp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.esp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid var(--linha); border-radius: 999px; font-size: .82rem; font-weight: 500; cursor: pointer; }
+.esp-chip input { width: auto; margin: 0; }
+.esp-chip.marcado { background: color-mix(in srgb, var(--primaria) 12%, #fff); border-color: var(--primaria); color: var(--primaria); }
+.esp-tag { display: inline-flex; align-items: center; border: 1px solid var(--linha); border-radius: 999px; overflow: hidden; font-size: .82rem; }
+.esp-tag button { border: 0; background: none; font: inherit; cursor: pointer; color: var(--texto); }
+.esp-tag-nome { padding: 4px 4px 4px 11px; }
+.esp-tag-nome small { color: var(--texto2); font-size: .72rem; }
+.esp-tag-x { padding: 4px 9px 4px 6px; color: var(--texto2) !important; }
+.esp-tag-x:hover { color: var(--vermelho) !important; }
+.rotulo-esp { font-size: .85rem; font-weight: 500; margin-top: 12px; }
+.filtro-esp { margin: -6px 0 14px; }
+@media (max-width: 560px) { .gestor-especialidades { margin-left: 0; } }

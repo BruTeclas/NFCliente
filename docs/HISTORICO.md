@@ -12,6 +12,20 @@ Cada versão publicada ganha um **ponto de restauração** no GitHub, um branch 
 
 Quando uma versão mexer no banco, ela também traz um script para desfazer a mudança. Os scripts ficam em `supabase/versoes/`.
 
+## v1.7.2 · 19/10/2026: especialidades dentro de cada segmento (ponto de restauração `versao-1.7.2`)
+
+- **Situação:** banco já atualizado; site pronto e testado, aguardando publicação.
+- **Especialidades (micro segmentos):** cada segmento tem a sua lista (ex.: Salão de Beleza → Lash Design, Manicure, Cabeleireira), mantida no cartão "Segmentos" da aba Gestor. Nome repetido no mesmo segmento é recusado; o mesmo nome em outro segmento pode.
+- **No perfil:** um segmento e várias especialidades dele, no editor do perfil e no painel do cliente. Trocar o segmento tira as especialidades do anterior.
+- **Busca no painel:** filtro por segmento e, em seguida, refinamento por especialidade.
+- **Excluir:** uma especialidade sai dos perfis que a tinham; um segmento leva junto as especialidades dele.
+- **Banco: mudou.**
+  - Tabela `especialidades` (só administradores) e o campo `perfis.especialidades`.
+  - Um gatilho descarta especialidades que não sejam do segmento do perfil ou que não existam mais.
+  - `cliente_extras` e `cliente_salvar` passaram a tratar as especialidades.
+  - Script: `supabase/versoes/v1.7.2.sql` (aplicado no Supabase com o nome `v1_8_0_especialidades`), também incluído no `schema.sql`. Para desfazer: `supabase/versoes/v1.7.2-desfazer.sql`.
+- **Conferido no banco** (teste desfeito ao final): repetida recusada; especialidades de outro segmento, inexistentes ou inválidas descartadas; lista enorme recusada; visitantes não leem a tabela.
+
 ## v1.7.1 · 19/10/2026: o navegador passa a buscar a versão nova sozinho (ponto de restauração `versao-1.7.1`)
 
 - **Problema:** o pacote gravava a mesma data (01/01/2026) em todos os arquivos. Quando o navegador perguntava ao servidor se a página tinha mudado desde essa data, a resposta era "não", e ele continuava mostrando a versão antiga até uma aba anônima ou uma atualização forçada.
