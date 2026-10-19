@@ -14,7 +14,7 @@ Quando uma versão mexer no banco, ela também traz um script para desfazer a mu
 
 ## v1.7.2 · 19/10/2026: especialidades dentro de cada segmento (ponto de restauração `versao-1.7.2`)
 
-- **Situação:** banco já atualizado; site pronto e testado, aguardando publicação.
+- **Publicada em 19/10/2026:** banco atualizado e os 28 arquivos do site, do painel e da página do cliente no ar conferidos um a um contra o pacote.
 - **Especialidades (micro segmentos):** cada segmento tem a sua lista (ex.: Salão de Beleza → Lash Design, Manicure, Cabeleireira), mantida no cartão "Segmentos" da aba Gestor. Nome repetido no mesmo segmento é recusado; o mesmo nome em outro segmento pode.
 - **No perfil:** um segmento e várias especialidades dele, no editor do perfil e no painel do cliente. Trocar o segmento tira as especialidades do anterior.
 - **Busca no painel:** filtro por segmento e, em seguida, refinamento por especialidade.
