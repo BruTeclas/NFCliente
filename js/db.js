@@ -99,6 +99,46 @@
     return { situacao: noAr ? "teste" : "nao-fechou", ate: ate };
   }
 
+  // Painel do gestor (v1.7.0): mesmas regras do banco
+  function validarSegmento(nome) {
+    nome = String(nome == null ? "" : nome).replace(/\s+/g, " ").trim();
+    if (!nome) throw erro("Digite o nome do segmento.");
+    if (nome.length > 60) throw erro("Nome do segmento muito longo (máximo 60 letras).");
+    return nome;
+  }
+  var ICONES_AVISO = ["fa-solid fa-headset", "fa-brands fa-whatsapp", "fa-solid fa-circle-info", "fa-solid fa-triangle-exclamation", "fa-solid fa-link", "fa-solid fa-circle-play", "fa-solid fa-gift"];
+  // Só o número do WhatsApp (com DDD) vira link do wa.me; o resto vale como digitado
+  function enderecoAviso(u) {
+    u = String(u == null ? "" : u).trim();
+    var dig = u.replace(/\D/g, "");
+    if (/^[\d\s()+.-]+$/.test(u) && dig.length >= 10 && dig.length <= 13) return "https://wa.me/" + (dig.length <= 11 ? "55" + dig : dig);
+    return u;
+  }
+  function validarAviso(a) {
+    a = a || {};
+    var r = {
+      tipo: a.tipo === "aviso" ? "aviso" : "link",
+      titulo: String(a.titulo == null ? "" : a.titulo).replace(/\s+/g, " ").trim(),
+      texto: String(a.texto == null ? "" : a.texto).trim() || null,
+      url: a.tipo === "aviso" ? null : enderecoAviso(a.url),
+      icone: ICONES_AVISO.indexOf(a.icone) >= 0 ? a.icone : ICONES_AVISO[0],
+      alvo: ["todos", "segmentos", "perfis"].indexOf(a.alvo) >= 0 ? a.alvo : "todos",
+      segmentos: Array.isArray(a.segmentos) ? a.segmentos : [],
+      perfis: Array.isArray(a.perfis) ? a.perfis : [],
+      ativo: a.ativo !== false
+    };
+    if (!r.titulo) throw erro("Digite o título.");
+    if (r.titulo.length > 60) throw erro("Título muito longo (máximo 60 letras).");
+    if (r.texto && r.texto.length > 300) throw erro("Texto muito longo (máximo 300 letras).");
+    if (r.tipo === "link" && !/^(https:\/\/\S+|mailto:\S+|tel:[+\d][\d -]*)$/i.test(r.url || ""))
+      throw erro("Endereço inválido. Use um link começando com https://, um e-mail (mailto:) ou só o número do WhatsApp com DDD.");
+    if (r.alvo === "segmentos" && !r.segmentos.length) throw erro("Escolha pelo menos um segmento.");
+    if (r.alvo === "perfis" && !r.perfis.length) throw erro("Escolha pelo menos um perfil.");
+    if (r.alvo !== "segmentos") r.segmentos = [];
+    if (r.alvo !== "perfis") r.perfis = [];
+    return r;
+  }
+
   // Foto do cliente na lista de clientes: a do perfil no ar; se nenhum estiver no ar, a do primeiro perfil com foto.
   // perfis: [{ status, vencimento, created_at, foto }]
   function fotoDoCliente(perfis) {
@@ -456,6 +496,48 @@
         gravarLista(CHAVE, perfis);
         gravarLista(CHAVE_CLIENTES, lerClientes().filter(function (c) { return c.id !== id; }));
         return Promise.resolve();
+      },
+
+      // Painel do gestor (v1.7.0)
+      listarSegmentos: function () {
+        var perfis = ler();
+        return Promise.resolve(lerLista("bt_demo_segmentos").map(function (s) {
+          return Object.assign({}, s, { total_perfis: perfis.filter(function (p) { return p.segmento_id === s.id; }).length });
+        }).sort(function (a, b) { return a.nome.localeCompare(b.nome, "pt-BR"); }));
+      },
+      salvarSegmento: function (id, nome) {
+        return Promise.resolve().then(function () {
+          nome = validarSegmento(nome);
+          var lista = lerLista("bt_demo_segmentos");
+          if (lista.some(function (s) { return s.id !== id && s.nome.toLowerCase() === nome.toLowerCase(); })) throw erro("Já existe um segmento com esse nome.");
+          var s = id ? lista.filter(function (x) { return x.id === id; })[0] : null;
+          if (s) s.nome = nome;
+          else { s = { id: "seg-" + Math.random().toString(36).slice(2, 10), nome: nome, criado_em: agora() }; lista.push(s); }
+          gravarLista("bt_demo_segmentos", lista);
+          return s;
+        });
+      },
+      excluirSegmento: function (id) {
+        var perfis = ler();
+        perfis.forEach(function (p) { if (p.segmento_id === id) p.segmento_id = null; });   // igual a "on delete set null"
+        gravarLista(CHAVE, perfis);
+        gravarLista("bt_demo_segmentos", lerLista("bt_demo_segmentos").filter(function (s) { return s.id !== id; }));
+        return Promise.resolve();
+      },
+      listarAvisos: function () { return Promise.resolve(lerLista("bt_demo_avisos")); },
+      salvarAviso: function (id, a) {
+        return Promise.resolve().then(function () {
+          var v = validarAviso(a), lista = lerLista("bt_demo_avisos");
+          var atual = id ? lista.filter(function (x) { return x.id === id; })[0] : null;
+          if (atual) Object.assign(atual, v);
+          else { atual = Object.assign({ id: "av-" + Math.random().toString(36).slice(2, 10), ordem: 0, criado_em: agora() }, v); lista.push(atual); }
+          gravarLista("bt_demo_avisos", lista);
+          return atual;
+        });
+      },
+      excluirAviso: function (id) {
+        gravarLista("bt_demo_avisos", lerLista("bt_demo_avisos").filter(function (x) { return x.id !== id; }));
+        return Promise.resolve();
       }
     };
     // Erros de leitura/gravação (ex.: armazenamento cheio) viram promessas rejeitadas,
@@ -508,7 +590,9 @@
     function checar(r, contexto) {
       if (r.error) {
         var c = r.error.code;
+        if (c === "23505" && contexto === "segmento") throw erro("Já existe um segmento com esse nome.");
         if (c === "23505") throw erro(contexto === "cliente" ? "Já existe um cliente com esse CPF/CNPJ." : "Esse link já está em uso por outro perfil.", contexto === "cliente" ? "documento" : null);
+        if (c === "23514" && (contexto === "segmento" || contexto === "aviso")) throw erro("Algum dado está em formato inválido.");
         if (c === "23514") throw erro(contexto === "cliente" ? "Algum dado do cliente está em formato inválido." : "Link inválido. Use letras minúsculas, números e hífen.");
         if (c === "42501" || c === "PGRST301" || r.status === 401 || r.status === 403) throw erro("Sua sessão expirou ou você não tem permissão. Entre novamente.");
         throw erro(r.error.message || "Erro ao acessar o banco de dados.");
@@ -663,6 +747,38 @@
       revogarLinkCliente: function (perfilId) { return sb.rpc("revogar_link_cliente", { p_perfil_id: perfilId }).then(checar); },
       historico: function (perfilId) {
         return sb.from("perfis_historico").select("id, dados, autor, criado_em").eq("perfil_id", perfilId).order("criado_em", { ascending: false }).limit(15).then(checar);
+      },
+
+      // Painel do gestor (v1.7.0)
+      listarSegmentos: function () {
+        return sb.from("segmentos").select("id, nome, criado_em, perfis(count)").order("nome").then(function (r) {
+          return (checar(r, "segmento") || []).map(function (s) {
+            var t = s.perfis && s.perfis[0] ? s.perfis[0].count : 0;
+            delete s.perfis;
+            return Object.assign(s, { total_perfis: t });
+          });
+        });
+      },
+      salvarSegmento: function (id, nome) {
+        return Promise.resolve().then(function () {
+          var v = { nome: validarSegmento(nome) }, q = sb.from("segmentos");
+          return (id ? q.update(v).eq("id", id) : q.insert(v)).select("id, nome").single().then(function (r) { return checar(r, "segmento"); });
+        });
+      },
+      excluirSegmento: function (id) {
+        return sb.from("segmentos").delete().eq("id", id).then(function (r) { return checar(r, "segmento"); });
+      },
+      listarAvisos: function () {
+        return sb.from("avisos_clientes").select("*").order("ordem").order("criado_em").then(function (r) { return checar(r, "aviso"); });
+      },
+      salvarAviso: function (id, a) {
+        return Promise.resolve().then(function () {
+          var v = validarAviso(a), q = sb.from("avisos_clientes");
+          return (id ? q.update(v).eq("id", id) : q.insert(v)).select("*").single().then(function (r) { return checar(r, "aviso"); });
+        });
+      },
+      excluirAviso: function (id) {
+        return sb.from("avisos_clientes").delete().eq("id", id).then(function (r) { return checar(r, "aviso"); });
       }
     };
   }
@@ -677,7 +793,8 @@
     function falha() { return Promise.reject(erro(msg)); }
     var d = { demo: false, indisponivel: msg, sessao: function () { return Promise.resolve(null); } };
     ["entrar", "sair", "recuperarSenha", "alterarSenha", "listar", "obter", "criar", "salvar", "excluir", "enviarImagem",
-     "removerImagem", "perfilPublico", "listarClientes", "obterCliente", "criarCliente", "salvarCliente", "excluirCliente"]
+     "removerImagem", "perfilPublico", "listarClientes", "obterCliente", "criarCliente", "salvarCliente", "excluirCliente",
+     "listarSegmentos", "salvarSegmento", "excluirSegmento", "listarAvisos", "salvarAviso", "excluirAviso"]
       .forEach(function (k) { d[k] = falha; });
     return d;
   }
@@ -699,5 +816,7 @@
   db.situacaoVencimento = situacaoVencimento;
   db.foraPorVencimento = foraPorVencimento;
   db.situacaoTeste = situacaoTeste;
+  db.ICONES_AVISO = ICONES_AVISO;
+  db.enderecoAviso = enderecoAviso;
   window.DB = db;
 })();

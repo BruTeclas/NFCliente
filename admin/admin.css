@@ -302,3 +302,27 @@ label i { color: var(--texto2); width: 16px; text-align: center; }
 .link-gerado { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85rem; word-break: break-all; background: var(--cinza-claro); border-radius: 10px; padding: 12px; margin: 10px 0; user-select: all; }
 .historico { display: flex; flex-direction: column; gap: 8px; }
 .historico-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 10px; border-radius: 10px; background: var(--cinza-claro); font-size: .88rem; }
+
+/* Painel do gestor (v1.7.0) */
+.filtro-segmento { width: auto; min-width: 190px; margin: 0; }
+.gestor-adicionar { display: flex; gap: 8px; margin-bottom: 14px; }
+.gestor-adicionar input { margin: 0; flex: 1; min-width: 0; }
+.gestor-lista { display: flex; flex-direction: column; gap: 8px; }
+.gestor-linha { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--linha); border-radius: 12px; }
+.gestor-linha.desligado { opacity: .6; }
+.gestor-icone { width: 34px; height: 34px; flex: none; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--primaria) 12%, #fff); color: var(--primaria); }
+.gestor-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.gestor-info strong { overflow-wrap: anywhere; }
+.gestor-info small { color: var(--texto2); font-size: .78rem; }
+.gestor-acoes { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.gestor-caixas { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow: auto; padding: 8px 10px; margin-top: 8px; border: 1px solid var(--linha); border-radius: 10px; }
+.gestor-marcar { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+.gestor-marcar input { width: auto; margin: 0; flex: none; }
+@media (max-width: 560px) { .gestor-linha { flex-wrap: wrap; } .gestor-acoes { width: 100%; justify-content: flex-start; } }
+
+/* Painel do cliente: links e avisos do administrador */
+.avisos-admin { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; }
+.aviso-admin { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, var(--primaria) 9%, #fff); border: 1px solid color-mix(in srgb, var(--primaria) 25%, #fff); }
+.aviso-admin > i { color: var(--primaria); margin-top: 3px; }
+.aviso-admin p { margin: 2px 0 0; color: var(--texto2); font-size: .88rem; white-space: pre-line; }
+.links-admin { display: flex; gap: 8px; flex-wrap: wrap; }

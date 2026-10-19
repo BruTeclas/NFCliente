@@ -12,6 +12,20 @@ Cada versão publicada ganha um **ponto de restauração** no GitHub, um branch 
 
 Quando uma versão mexer no banco, ela também traz um script para desfazer a mudança. Os scripts ficam em `supabase/versoes/`.
 
+## v1.7.0 · 19/10/2026: painel do gestor, segmentos e avisos para os clientes (ponto de restauração `versao-1.7.0`)
+
+- **Situação:** banco já atualizado; site pronto e testado, aguardando publicação.
+- **Aba "Gestor"** no painel, só para administradores:
+  - **Segmentos:** incluir, renomear e excluir. Nome repetido é recusado. Excluir deixa os perfis "sem segmento".
+  - **Links e avisos nos painéis dos clientes:** link (https, e-mail ou WhatsApp só com o número) ou aviso, para todos, alguns segmentos ou alguns perfis; ligar e desligar.
+- **Segmento nos perfis:** no editor do perfil e no painel do cliente (só entre os da lista; vale ao salvar). Filtro por segmento na lista de perfis.
+- **Painel do cliente:** mostra no topo os links e avisos que valem para ele. Links que não sejam https, e-mail ou telefone são ignorados, e o texto dos avisos aparece como texto puro.
+- **Banco: mudou.**
+  - Tabelas `segmentos` e `avisos_clientes` (só administradores leem e alteram) e o campo `perfis.segmento_id`.
+  - Função nova `cliente_extras` e `cliente_salvar` passou a aceitar o segmento (só um da lista).
+  - Script: `supabase/versoes/v1.7.0.sql`, também incluído no `schema.sql`. Para desfazer: `supabase/versoes/v1.7.0-desfazer.sql`.
+- **Conferido no banco** (teste desfeito ao final): nome repetido e link `javascript:` recusados; o cliente recebe só os avisos dele; segmento inexistente ou inválido recusado; visitantes não leem as tabelas novas.
+
 ## v1.6.2 · 16/10/2026: ajustar a foto de fundo (ponto de restauração `versao-1.6.2`)
 
 - **Publicada em 16/10/2026:** arquivos do site e do painel no ar conferidos contra o pacote; os da página do cliente conferidos pelo tamanho.

@@ -7,7 +7,7 @@
  */
 (function () {
   "use strict";
-  var el = Perfil.el;
+  var el = Perfil.el, icone = Perfil.icone;
   var $ = function (id) { return document.getElementById(id); };
   var cfg = window.CONFIG || {};
   var API = (cfg.supabaseUrl || "").replace(/\/+$/, ""), CHAVE = cfg.supabaseAnonKey || "";
@@ -93,10 +93,47 @@
       dados.links = (dados.links || []).map(function (l, i) { return l.id ? l : Object.assign({ id: "l" + i + Math.random().toString(36).slice(2, 7) }, l); });
       est = { sessao: j.sessao, slug: j.slug, dados: dados, orig: JSON.stringify(dados), sujo: false };
       desenharEditor();
+      carregarExtras();
     }
     $("pin").value = "";
     $("telaPin").hidden = true; $("telaEditor").hidden = false;
     if (salvarAgora) { est.salvarDepoisDoPin = false; salvar(); }
+  }
+
+  // Links/avisos do administrador e segmento (v1.7.0). Sem eles (banco antigo, falha de rede), o editor segue normal.
+  function carregarExtras() {
+    rpc("cliente_extras", { p_sessao: est.sessao }).then(function (j) {
+      if (!j || j.erro) return;
+      est.avisos = Array.isArray(j.avisos) ? j.avisos : [];
+      est.segmentos = Array.isArray(j.segmentos) ? j.segmentos : [];
+      est.segmento = est.segOrig = j.segmento_id || "";
+      desenharEditor();
+    }).catch(function () { /* opcional */ });
+  }
+  function enderecoSeguro(u) { return /^(https:\/\/|mailto:|tel:)/i.test(String(u || "")) ? u : null; }
+  function blocoAvisos() {
+    var avisos = (est.avisos || []).filter(function (a) { return a.tipo === "aviso"; });
+    var links = (est.avisos || []).filter(function (a) { return a.tipo !== "aviso" && enderecoSeguro(a.url); });
+    if (!avisos.length && !links.length) return null;
+    var caixa = el("div", { class: "avisos-admin" });
+    avisos.forEach(function (a) {
+      caixa.appendChild(el("div", { class: "aviso-admin" }, [icone(a.icone || "fa-solid fa-circle-info"),
+        el("div", {}, [el("strong", { text: a.titulo }), a.texto ? el("p", { text: a.texto }) : null])]));
+    });
+    if (links.length) caixa.appendChild(el("div", { class: "links-admin" }, links.map(function (a) {
+      return el("a", { class: "btn primario", href: a.url, target: "_blank", rel: "noopener noreferrer", title: a.texto || a.titulo }, [icone(a.icone || "fa-solid fa-link"), " " + a.titulo]);
+    })));
+    return caixa;
+  }
+  function cartaoSegmento() {
+    if (!est.segmentos || !est.segmentos.length) return null;
+    var sel = el("select", { "aria-label": "Segmento do seu negócio" });
+    sel.appendChild(el("option", { value: "", text: "— Escolha —" }));
+    est.segmentos.forEach(function (s) { sel.appendChild(el("option", { value: s.id, text: s.nome })); });
+    sel.value = est.segmento || "";
+    sel.addEventListener("change", function () { est.segmento = sel.value; marcarSujo(); });
+    return EditorPerfil.cartao("fa-solid fa-tag", "Segmento do seu negócio", [sel,
+      el("div", { class: "dica", text: "O tipo do seu negócio. Vale quando você clicar em Salvar." })]);
   }
 
   // ---------------------------------------------------------------------------
@@ -106,7 +143,11 @@
     var form = $("formEditor"), rolagem = window.scrollY;
     form.innerHTML = "";
     $("btnVerPagina").href = (cfg.dominio || "").replace(/\/+$/, "") + "/" + est.slug;
+    var avisos = blocoAvisos();
+    if (avisos) form.appendChild(avisos);
     form.appendChild(el("p", { class: "sub", style: "margin:0 0 16px", text: "Altere o que quiser e clique em Salvar. A sua página só muda depois de salvar." }));
+    var seg = cartaoSegmento();
+    if (seg) form.appendChild(seg);
     EditorPerfil.montar(form, {
       dados: est.dados, marcarSujo: marcarSujo, falhou: falhou, enviarImagem: enviarImagem,
       aoMudarNome: function () { $("edTitulo").textContent = est.dados.nome || "Minha página"; }
@@ -118,7 +159,7 @@
   }
   var tPrevia;
   function marcarSujo() {
-    est.sujo = JSON.stringify(est.dados) !== est.orig;
+    est.sujo = JSON.stringify(est.dados) !== est.orig || (est.segmento || "") !== (est.segOrig || "");
     $("edSalvo").textContent = est.sujo ? "Alterações não salvas" : "Tudo salvo";
     $("edSalvo").className = "salvo" + (est.sujo ? " pendente" : "");
     clearTimeout(tPrevia);
@@ -132,7 +173,9 @@
     if (!est || est.salvando) return;
     var btn = $("btnSalvar");
     btn.disabled = true; est.salvando = true;
-    rpc("cliente_salvar", { p_sessao: est.sessao, p_dados: est.dados }).then(function (j) {
+    // O segmento vai junto (o banco confere se é um dos segmentos da lista)
+    var envio = est.segmentos ? Object.assign({}, est.dados, { _segmento_id: est.segmento || "" }) : est.dados;
+    rpc("cliente_salvar", { p_sessao: est.sessao, p_dados: envio }).then(function (j) {
       if (j && j.erro === "sessao") {
         // Acesso expirou (2 horas) ou o link foi trocado: pede o PIN de novo e salva em seguida
         est.salvarDepoisDoPin = true;
@@ -145,6 +188,7 @@
       est.dados = Object.assign({ links: [] }, j.dados);
       est.dados.links = est.dados.links.map(function (l, i) { return l.id ? l : Object.assign({ id: "s" + i + Math.random().toString(36).slice(2, 7) }, l); });
       est.orig = JSON.stringify(est.dados);
+      if ("segmento_id" in j) est.segmento = est.segOrig = j.segmento_id || "";
       desenharEditor();
       toast("Salvo! Sua página já foi atualizada. ✅");
     }).catch(falhou).then(function () { btn.disabled = false; est.salvando = false; });

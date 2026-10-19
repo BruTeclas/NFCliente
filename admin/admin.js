@@ -9,6 +9,9 @@
 
   var estado = {
     perfis: [],
+    segmentos: [],      // painel do gestor (v1.7.0)
+    avisos: [],
+    filtroSeg: "",      // "" todos · "sem" sem segmento · id
     filtro: "todos",
     busca: "",
     ed: null,           // editor de perfil: { orig, p, sujo, imagensNovas: [] }
@@ -380,12 +383,13 @@
     if (haAlteracoes()) { e.preventDefault(); e.returnValue = ""; }
   });
 
-  var TELAS = ["telaLista", "telaEditor", "telaClientes", "telaCliente"];
+  var TELAS = ["telaLista", "telaEditor", "telaClientes", "telaCliente", "telaGestor"];
   function mostrarTela(id) {
     TELAS.forEach(function (t) { $(t).hidden = t !== id; });
     var emClientes = id === "telaClientes" || id === "telaCliente";
     $("abaClientes").classList.toggle("ativa", emClientes);
-    $("abaPerfis").classList.toggle("ativa", !emClientes);
+    $("abaGestor").classList.toggle("ativa", id === "telaGestor");
+    $("abaPerfis").classList.toggle("ativa", !emClientes && id !== "telaGestor");
     window.scrollTo(0, 0);
   }
 
@@ -393,6 +397,7 @@
     var h = location.hash, m;
     if ((m = h.match(/^#\/perfil\/([\w-]+)/))) abrirEditor(m[1]);
     else if (h === "#/clientes") mostrarClientes();
+    else if (h === "#/gestor") mostrarGestor();
     else if ((m = h.match(/^#\/cliente\/([\w-]+)/))) abrirCliente(m[1]);
     else mostrarLista();
   }
@@ -405,8 +410,9 @@
     document.title = "Perfis · Painel";
     $("lista").innerHTML = "";
     $("lista").appendChild(el("div", { class: "vazio", text: "Carregando…" }));
-    DB.listar().then(function (lista) {
-      estado.perfis = lista || [];
+    Promise.all([DB.listar(), carregarSegmentos()]).then(function (res) {
+      estado.perfis = res[0] || [];
+      desenharFiltroSegmento();
       desenharLista();
     }).catch(falhou);
   }
@@ -421,6 +427,7 @@
 
     var b = estado.busca.trim().toLowerCase();
     var vis = todos.filter(function (p) {
+      if (estado.filtroSeg && (estado.filtroSeg === "sem" ? p.segmento_id : p.segmento_id !== estado.filtroSeg)) return false;
       if (estado.filtro === "vencidos" && (!vencido(p) || p.teste_desde)) return false;   // testes têm filtros próprios
       if (["ativo", "inativo", "rascunho", "teste", "nao-fechou"].indexOf(estado.filtro) >= 0 && statusVisivel(p) !== estado.filtro) return false;
       if (!b) return true;
@@ -441,6 +448,8 @@
       var foto = p.dados && p.dados.foto;
       var meta = [el("a", { href: url, target: "_blank", rel: "noopener" }, [icone("fa-solid fa-link"), " /" + p.slug])];
       if (p.cliente) meta.push(el("a", { href: "#/cliente/" + p.cliente.id }, [icone("fa-regular fa-user"), " " + p.cliente.nome]));
+      var seg = nomeSegmento(p.segmento_id);
+      if (seg) meta.push(el("span", {}, [icone("fa-solid fa-tag"), " " + seg]));
       var tv = textoVencimento(p);
       if (tv) meta.push(el("span", { class: tv.classe }, [icone("fa-regular fa-calendar"), tv.texto]));
 
@@ -480,6 +489,26 @@
   }
 
   $("busca").addEventListener("input", function () { estado.busca = this.value; desenharLista(); });
+  $("filtroSegmento").addEventListener("change", function () { estado.filtroSeg = this.value; desenharLista(); });
+
+  // Segmentos (v1.7.0). Se o banco ainda não tiver segmentos, o painel segue funcionando sem eles.
+  function carregarSegmentos() {
+    return DB.listarSegmentos().then(function (l) { estado.segmentos = l || []; }, function () { estado.segmentos = []; });
+  }
+  function nomeSegmento(id) {
+    var s = id && estado.segmentos.filter(function (x) { return x.id === id; })[0];
+    return s ? s.nome : "";
+  }
+  function desenharFiltroSegmento() {
+    var sel = $("filtroSegmento");
+    sel.innerHTML = "";
+    sel.appendChild(el("option", { value: "", text: "Todos os segmentos" }));
+    estado.segmentos.forEach(function (s) { sel.appendChild(el("option", { value: s.id, text: s.nome })); });
+    sel.appendChild(el("option", { value: "sem", text: "Sem segmento" }));
+    if (estado.filtroSeg && estado.filtroSeg !== "sem" && !nomeSegmento(estado.filtroSeg)) estado.filtroSeg = "";
+    sel.value = estado.filtroSeg;
+    sel.hidden = !estado.segmentos.length;
+  }
   $("filtroStatus").addEventListener("click", function (e) {
     var b = e.target.closest(".chip");
     if (!b) return;
@@ -608,7 +637,7 @@
     $("edTitulo").textContent = "Carregando…";
     $("edSelo").className = "";
     $("edSelo").textContent = "";
-    Promise.all([DB.obter(id), DB.listarClientes()]).then(function (res) {
+    Promise.all([DB.obter(id), DB.listarClientes(), carregarSegmentos()]).then(function (res) {
       var p = res[0];
       estado.clientes = res[1];
       if (!p) { toast("Perfil não encontrado.", true); location.hash = "#/"; return; }
@@ -779,6 +808,7 @@
         el("label", { class: "todo" }, ["Cliente", selCliente,
           el("div", { class: "status-botoes", style: "margin-top:8px" }, [linkCliente, btnImportar, el("a", { class: "btn pequeno fantasma", href: "#/cliente/novo" }, [icone("fa-solid fa-user-plus"), " Novo cliente"])])]),
         campoVencimento(p),
+        campoSegmento(p),
         campoTexto("Observações", p.observacoes, function (v) { p.observacoes = v; marcarSujo(); }, { classe: "todo", multilinha: true, ph: "Forma de pagamento, nº do chaveiro, combinados..." })
       ])
     ]));
@@ -800,6 +830,17 @@
     ]));
 
     marcarSujo();
+  }
+
+  // Campo "Segmento" do editor (o cliente também pode escolher no painel dele)
+  function campoSegmento(p) {
+    var sel = el("select");
+    sel.appendChild(el("option", { value: "", text: "— Sem segmento —" }));
+    estado.segmentos.forEach(function (s) { sel.appendChild(el("option", { value: s.id, text: s.nome })); });
+    sel.value = p.segmento_id || "";
+    sel.addEventListener("change", function () { p.segmento_id = sel.value || null; marcarSujo(); });
+    return el("label", {}, ["Segmento", sel, el("div", { class: "dica" }, [
+      "O cliente também pode escolher no painel dele. ", el("a", { href: "#/gestor", text: "Gerenciar segmentos" })])]);
   }
 
   // Campo "Próximo vencimento" do editor, com o botão que soma 1 mês (vale ao salvar)
@@ -915,7 +956,7 @@
     var btn = $("btnSalvar");
     btn.disabled = true;
     var p = ed.p, patch = {
-      dados: p.dados, cliente_id: p.cliente_id || null,
+      dados: p.dados, cliente_id: p.cliente_id || null, segmento_id: p.segmento_id || null,
       vencimento: p.vencimento || null, observacoes: p.observacoes || null
     };
     if (p.slug !== ed.orig.slug) patch.slug = p.slug;
@@ -983,6 +1024,183 @@
   function fmtCep(v) { var d = DB.soDigitos(v).slice(0, 8); return d.length > 5 ? d.slice(0, 5) + "-" + d.slice(5) : d; }
   function fmtValor(v) { return v == null || v === "" ? "" : Number(v).toFixed(2).replace(".", ","); }
   function cidadeUF(c) { return [c.cidade, c.uf].filter(Boolean).join("/"); }
+
+  // ===========================================================================
+  // Painel do gestor (v1.7.0): segmentos e links/avisos nos painéis dos clientes. Só administradores.
+  // ===========================================================================
+  var ICONES_NOMES = {
+    "fa-solid fa-headset": "Suporte", "fa-brands fa-whatsapp": "WhatsApp", "fa-solid fa-circle-info": "Informação",
+    "fa-solid fa-triangle-exclamation": "Atenção", "fa-solid fa-link": "Link", "fa-solid fa-circle-play": "Vídeo / tutorial", "fa-solid fa-gift": "Promoção"
+  };
+  function mostrarGestor() {
+    mostrarTela("telaGestor");
+    document.title = "Gestor · Painel";
+    $("gestor").innerHTML = "";
+    $("gestor").appendChild(el("div", { class: "vazio", text: "Carregando…" }));
+    carregarGestor();
+  }
+  function carregarGestor() {
+    return Promise.all([DB.listarSegmentos(), DB.listarAvisos(), DB.listar()]).then(function (res) {
+      estado.segmentos = res[0] || []; estado.avisos = res[1] || []; estado.perfis = res[2] || [];
+      var alvo = $("gestor");
+      alvo.innerHTML = "";
+      alvo.appendChild(cartaoSegmentos());
+      alvo.appendChild(cartaoAvisos());
+    }).catch(falhou);
+  }
+
+  // Janela com um campo de texto. Devolve o texto, ou null se cancelar.
+  function pedirTexto(o) {
+    return new Promise(function (ok) {
+      var resolvido = false, m;
+      var input = el("input", { type: "text", maxlength: String(o.max || 60) });
+      input.value = o.valor || "";
+      function confirmarTexto() { resolvido = true; m.fechar(); ok(input.value); }
+      input.addEventListener("keydown", function (e) { if (e.key === "Enter") confirmarTexto(); });
+      m = abrirModal([
+        el("h2", { text: o.titulo }), input,
+        el("div", { class: "modal-botoes" }, [
+          el("button", { class: "btn", type: "button", text: "Cancelar", onclick: function () { m.fechar(); } }),
+          el("button", { class: "btn primario", type: "button", text: o.botao || "Salvar", onclick: confirmarTexto })
+        ])
+      ], function () { if (!resolvido) ok(null); });
+    });
+  }
+
+  function cartaoSegmentos() {
+    var nome = el("input", { type: "text", maxlength: "60", placeholder: "Novo segmento (ex.: Beleza e estética)", "aria-label": "Nome do novo segmento" });
+    function adicionar() {
+      DB.salvarSegmento(null, nome.value).then(function () { toast("Segmento incluído. ✅"); carregarGestor(); }).catch(falhou);
+    }
+    nome.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); adicionar(); } });
+    var lista = el("div", { class: "gestor-lista" });
+    if (!estado.segmentos.length) lista.appendChild(el("p", { class: "sub", text: "Nenhum segmento ainda." }));
+    estado.segmentos.forEach(function (s) {
+      lista.appendChild(el("div", { class: "gestor-linha" }, [
+        el("span", { class: "gestor-icone" }, [icone("fa-solid fa-tag")]),
+        el("div", { class: "gestor-info" }, [el("strong", { text: s.nome }), el("small", { text: s.total_perfis + (s.total_perfis === 1 ? " perfil" : " perfis") })]),
+        el("div", { class: "gestor-acoes" }, [
+          el("button", { class: "btn pequeno", type: "button", onclick: function () {
+            pedirTexto({ titulo: "Renomear segmento", valor: s.nome, max: 60 }).then(function (v) {
+              if (v == null) return;
+              return DB.salvarSegmento(s.id, v).then(function () { toast("Segmento renomeado."); carregarGestor(); });
+            }).catch(falhou);
+          } }, [icone("fa-solid fa-pen"), " Renomear"]),
+          el("button", { class: "btn pequeno icone perigo-leve", type: "button", title: "Excluir", "aria-label": "Excluir " + s.nome, onclick: function () {
+            confirmar({
+              titulo: "Excluir o segmento \"" + s.nome + "\"?",
+              texto: s.total_perfis ? s.total_perfis + (s.total_perfis === 1 ? " perfil fica" : " perfis ficam") + " sem segmento. Nenhum perfil é apagado." : "Nenhum perfil usa este segmento.",
+              botao: "Excluir", classe: "perigo"
+            }).then(function (sim) {
+              if (sim) return DB.excluirSegmento(s.id).then(function () { toast("Segmento excluído."); carregarGestor(); });
+            }).catch(falhou);
+          } }, [icone("fa-solid fa-trash-can")])
+        ])
+      ]));
+    });
+    return cartao("fa-solid fa-tags", "Segmentos", [
+      el("p", { class: "sub", style: "margin:-6px 0 14px", text: "O tipo de negócio de cada perfil. Você escolhe no editor do perfil; o cliente também pode escolher no painel dele, só entre os segmentos desta lista." }),
+      el("div", { class: "gestor-adicionar" }, [nome, el("button", { class: "btn primario", type: "button", onclick: adicionar }, [icone("fa-solid fa-plus"), " Adicionar"])]),
+      lista
+    ]);
+  }
+
+  function descreverAlvo(a) {
+    if (a.alvo === "segmentos") return "Segmentos: " + (a.segmentos || []).map(function (id) { return nomeSegmento(id) || "(excluído)"; }).join(", ");
+    if (a.alvo === "perfis") { var n = (a.perfis || []).length; return n + (n === 1 ? " perfil" : " perfis"); }
+    return "Todos os clientes";
+  }
+  function cartaoAvisos() {
+    var lista = el("div", { class: "gestor-lista" });
+    if (!estado.avisos.length) lista.appendChild(el("p", { class: "sub", text: "Nenhum link ou aviso ainda." }));
+    estado.avisos.forEach(function (a) {
+      lista.appendChild(el("div", { class: "gestor-linha" + (a.ativo ? "" : " desligado") }, [
+        el("span", { class: "gestor-icone" }, [icone(a.icone || "fa-solid fa-link")]),
+        el("div", { class: "gestor-info" }, [
+          el("strong", { text: a.titulo }),
+          el("small", { text: (a.tipo === "aviso" ? "Aviso" : "Link") + " · " + descreverAlvo(a) + (a.ativo ? "" : " · desligado") })
+        ]),
+        el("div", { class: "gestor-acoes" }, [
+          el("button", { class: "btn pequeno", type: "button", onclick: function () { formularioAviso(a); } }, [icone("fa-solid fa-pen"), " Editar"]),
+          el("button", { class: "btn pequeno", type: "button", onclick: function () {
+            DB.salvarAviso(a.id, Object.assign({}, a, { ativo: !a.ativo })).then(function () { toast(a.ativo ? "Desligado." : "Ligado. ✅"); carregarGestor(); }).catch(falhou);
+          } }, [icone(a.ativo ? "fa-solid fa-toggle-on" : "fa-solid fa-toggle-off"), a.ativo ? " Desligar" : " Ligar"]),
+          el("button", { class: "btn pequeno icone perigo-leve", type: "button", title: "Excluir", "aria-label": "Excluir " + a.titulo, onclick: function () {
+            confirmar({ titulo: "Excluir \"" + a.titulo + "\"?", texto: "Some dos painéis dos clientes na próxima vez que eles abrirem.", botao: "Excluir", classe: "perigo" }).then(function (sim) {
+              if (sim) return DB.excluirAviso(a.id).then(function () { toast("Excluído."); carregarGestor(); });
+            }).catch(falhou);
+          } }, [icone("fa-solid fa-trash-can")])
+        ])
+      ]));
+    });
+    return cartao("fa-solid fa-bullhorn", "Links e avisos nos painéis dos clientes", [
+      el("p", { class: "sub", style: "margin:-6px 0 14px", text: "Aparecem no topo do painel em que o cliente edita a página (o link que você envia). Ele vê, mas não altera. Exemplo: \"Chame o Suporte\"." }),
+      el("button", { class: "btn primario", type: "button", style: "margin-bottom:14px", onclick: function () { formularioAviso(null); } }, [icone("fa-solid fa-plus"), " Novo link ou aviso"]),
+      lista
+    ]);
+  }
+
+  function formularioAviso(a) {
+    var v = Object.assign({ tipo: "link", titulo: "", texto: "", url: "", icone: DB.ICONES_AVISO[0], alvo: "todos", segmentos: [], perfis: [], ativo: true }, a || {});
+    var tipo = el("select", {}, [el("option", { value: "link", text: "Link (botão)" }), el("option", { value: "aviso", text: "Aviso (mensagem)" })]);
+    tipo.value = v.tipo;
+    var titulo = el("input", { type: "text", maxlength: "60", placeholder: "Ex.: Chame o Suporte" });
+    titulo.value = v.titulo;
+    var url = el("input", { type: "text", placeholder: "https://... ou o WhatsApp com DDD" });
+    url.value = v.url || "";
+    var texto = el("textarea", { maxlength: "300", placeholder: "Opcional no link; a mensagem, no aviso" });
+    texto.value = v.texto || "";
+    var iconeSel = el("select");
+    DB.ICONES_AVISO.forEach(function (i) { iconeSel.appendChild(el("option", { value: i, text: ICONES_NOMES[i] || i })); });
+    iconeSel.value = v.icone || DB.ICONES_AVISO[0];
+    var alvoSel = el("select", {}, [el("option", { value: "todos", text: "Todos os clientes" }), el("option", { value: "segmentos", text: "Só alguns segmentos" }), el("option", { value: "perfis", text: "Só alguns perfis" })]);
+    alvoSel.value = v.alvo;
+    function caixas(itens, marcados) {
+      return el("div", { class: "gestor-caixas" }, itens.map(function (it) {
+        var c = el("input", { type: "checkbox", value: it.id });
+        c.checked = marcados.indexOf(it.id) >= 0;
+        return el("label", { class: "gestor-marcar" }, [c, it.nome]);
+      }));
+    }
+    var segs = caixas(estado.segmentos.map(function (s) { return { id: s.id, nome: s.nome }; }), v.segmentos || []);
+    var perfs = caixas(estado.perfis.map(function (p) { return { id: p.id, nome: nomeDe(p) + " (/" + p.slug + ")" }; }), v.perfis || []);
+    var ligado = el("input", { type: "checkbox" });
+    ligado.checked = v.ativo !== false;
+    var campoUrl = el("label", {}, ["Endereço", url, el("div", { class: "dica", text: "Link (https://...), e-mail (mailto:...) ou só o número do WhatsApp com DDD." })]);
+    var campoSegs = el("div", {}, [estado.segmentos.length ? segs : el("p", { class: "sub", text: "Cadastre segmentos primeiro, no cartão \"Segmentos\"." })]);
+    var campoPerfs = el("div", {}, [perfs]);
+    function atualizar() {
+      campoUrl.hidden = tipo.value === "aviso";
+      campoSegs.hidden = alvoSel.value !== "segmentos";
+      campoPerfs.hidden = alvoSel.value !== "perfis";
+    }
+    tipo.addEventListener("change", atualizar);
+    alvoSel.addEventListener("change", atualizar);
+    atualizar();
+    function marcados(caixa) { return [].slice.call(caixa.querySelectorAll("input:checked")).map(function (c) { return c.value; }); }
+    var m;
+    function salvarAviso() {
+      DB.salvarAviso(a && a.id, {
+        tipo: tipo.value, titulo: titulo.value, texto: texto.value, url: url.value, icone: iconeSel.value,
+        alvo: alvoSel.value, segmentos: marcados(segs), perfis: marcados(perfs), ativo: ligado.checked
+      }).then(function () { m.fechar(); toast("Salvo! ✅"); carregarGestor(); }).catch(falhou);
+    }
+    m = abrirModal([
+      el("h2", { text: a ? "Editar link ou aviso" : "Novo link ou aviso" }),
+      el("label", {}, ["Tipo", tipo]),
+      el("label", {}, ["Título", titulo]),
+      campoUrl,
+      el("label", {}, ["Texto", texto]),
+      el("label", {}, ["Ícone", iconeSel]),
+      el("label", {}, ["Para quem", alvoSel]),
+      campoSegs, campoPerfs,
+      el("label", { class: "gestor-marcar" }, [ligado, "Ligado (aparece para os clientes)"]),
+      el("div", { class: "modal-botoes" }, [
+        el("button", { class: "btn", type: "button", text: "Cancelar", onclick: function () { m.fechar(); } }),
+        el("button", { class: "btn primario", type: "button", text: "Salvar", onclick: salvarAviso })
+      ])
+    ]);
+  }
 
   function mostrarClientes() {
     mostrarTela("telaClientes");

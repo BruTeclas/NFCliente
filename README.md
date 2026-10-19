@@ -110,6 +110,14 @@ O próprio cliente pode ajustar a página dele, sem acesso ao painel.
 - **Desfazer:** cada alteração, sua ou do cliente, guarda a versão anterior. No editor, o cartão **"Histórico de alterações"** mostra as últimas 15. **Carregar** põe a versão no editor; ela só vai ao ar quando você salvar.
 - **Perfil desativado ou vencido:** o link para de funcionar na hora e volta a valer quando o perfil voltar ao ar.
 
+### Painel do gestor (v1.7.0)
+
+A aba **Gestor** reúne o que só o administrador mexe:
+
+- **Segmentos:** a lista de tipos de negócio (Beleza, Pet, Academia…). Você inclui, renomeia e exclui. Excluir não apaga perfis: eles ficam "sem segmento".
+- **Segmento nos perfis:** no editor do perfil, em "Cliente e cobrança". O cliente também pode escolher no painel dele, só entre os segmentos da lista. A lista de perfis tem um filtro por segmento.
+- **Links e avisos nos painéis dos clientes:** por exemplo, o botão **"Chame o Suporte"** (link, e-mail ou só o número do WhatsApp) ou um aviso ("Manutenção sábado às 22h"). Escolha para quem aparece: todos, alguns segmentos ou alguns perfis. Aparece no topo do painel em que o cliente edita a página; ele vê, mas não altera. Dá para ligar, desligar, editar e excluir.
+
 ### Acesso ao painel
 
 - **Login** só para administradores, com mensagens claras para senha errada, e-mail não confirmado e excesso de tentativas.

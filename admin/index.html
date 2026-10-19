@@ -50,6 +50,7 @@
       <nav class="abas" aria-label="Seções">
         <a href="#/" id="abaPerfis" class="aba"><i class="fa-solid fa-id-card"></i> Perfis</a>
         <a href="#/clientes" id="abaClientes" class="aba"><i class="fa-solid fa-users"></i> Clientes</a>
+        <a href="#/gestor" id="abaGestor" class="aba"><i class="fa-solid fa-sliders"></i> Gestor</a>
       </nav>
       <div class="barra-dir">
         <button class="btn fantasma" id="btnConta" type="button" title="Minha conta"><i class="fa-solid fa-circle-user"></i> <span class="usuario" id="usuarioEmail"></span></button>
@@ -69,6 +70,7 @@
 
       <div class="filtros">
         <div class="busca"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="busca" placeholder="Buscar por nome, cliente ou link"></div>
+        <select id="filtroSegmento" class="filtro-segmento" aria-label="Filtrar por segmento" hidden></select>
         <div class="chips" id="filtroStatus" role="tablist">
           <button class="chip ativo" data-f="todos" type="button">Todos</button>
           <button class="chip" data-f="ativo" type="button">No ar</button>
@@ -99,6 +101,17 @@
     </main>
 
     <!-- CADASTRO DE CLIENTE -->
+    <!-- PAINEL DO GESTOR (só administradores) -->
+    <main id="telaGestor" class="conteudo estreito" hidden>
+      <div class="titulo-linha">
+        <div>
+          <h1>Gestor</h1>
+          <p class="sub">Configurações do sistema que só os administradores veem e alteram.</p>
+        </div>
+      </div>
+      <div id="gestor"></div>
+    </main>
+
     <main id="telaCliente" class="conteudo estreito" hidden>
       <div class="editor-topo">
         <a href="#/clientes" class="btn fantasma"><i class="fa-solid fa-arrow-left"></i> Clientes</a>

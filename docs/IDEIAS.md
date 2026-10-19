@@ -63,3 +63,15 @@ Próximas evoluções do NFCliente. **Nada aqui está em desenvolvimento**: é a
 ## 6. Modelos prontos por segmento
 
 - Páginas de partida para salão, restaurante, pet (coleira), emergência médica, corretor.
+
+## 7. Próximos itens do painel do gestor
+
+A aba "Gestor" começou na v1.7.0 com segmentos e avisos. Ideias para as próximas versões:
+
+- **Resumo do negócio:** perfis no ar, em teste, testes não fechados (taxa de conversão) e receita mensal.
+- **Cobrança da semana:** quem vence nos próximos 7 dias, com botão de WhatsApp e mensagem pronta.
+- **Configurações gerais:** WhatsApp de suporte, rodapé das páginas ("Desenvolvido por…"), dias de carência e de teste, mensagem padrão do link do cliente.
+- **Planos:** cadastrar planos (nome, valor, período) e escolher no cliente.
+- **Modelos de página por segmento** (ideia 6).
+- **Administradores:** ver quem tem acesso ao painel.
+- **Links nas páginas públicas:** mostrar links do administrador também para os visitantes (hoje os avisos só aparecem no painel do cliente).
