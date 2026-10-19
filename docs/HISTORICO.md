@@ -14,7 +14,7 @@ Quando uma versão mexer no banco, ela também traz um script para desfazer a mu
 
 ## v1.7.0 · 19/10/2026: painel do gestor, segmentos e avisos para os clientes (ponto de restauração `versao-1.7.0`)
 
-- **Situação:** banco já atualizado; site pronto e testado, aguardando publicação.
+- **Publicada em 19/10/2026:** banco atualizado e os 28 arquivos do site, do painel e da página do cliente no ar conferidos um a um contra o pacote.
 - **Aba "Gestor"** no painel, só para administradores:
   - **Segmentos:** incluir, renomear e excluir. Nome repetido é recusado. Excluir deixa os perfis "sem segmento".
   - **Links e avisos nos painéis dos clientes:** link (https, e-mail ou WhatsApp só com o número) ou aviso, para todos, alguns segmentos ou alguns perfis; ligar e desligar.
