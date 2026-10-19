@@ -12,6 +12,12 @@ Cada versão publicada ganha um **ponto de restauração** no GitHub, um branch 
 
 Quando uma versão mexer no banco, ela também traz um script para desfazer a mudança. Os scripts ficam em `supabase/versoes/`.
 
+## v1.7.1 · 19/10/2026: o navegador passa a buscar a versão nova sozinho (ponto de restauração `versao-1.7.1`)
+
+- **Problema:** o pacote gravava a mesma data (01/01/2026) em todos os arquivos. Quando o navegador perguntava ao servidor se a página tinha mudado desde essa data, a resposta era "não", e ele continuava mostrando a versão antiga até uma aba anônima ou uma atualização forçada.
+- **Correção:** cada arquivo do pacote leva a data do seu último commit (ou a data da montagem, se ainda não foi salvo no git). Mudou o conteúdo, muda a data, e o navegador baixa de novo.
+- Nenhuma mudança no código das páginas nem no banco.
+
 ## v1.7.0 · 19/10/2026: painel do gestor, segmentos e avisos para os clientes (ponto de restauração `versao-1.7.0`)
 
 - **Publicada em 19/10/2026:** banco atualizado e os 28 arquivos do site, do painel e da página do cliente no ar conferidos um a um contra o pacote.

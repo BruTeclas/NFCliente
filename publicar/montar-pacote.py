@@ -10,6 +10,8 @@ Uso: python3 publicar/montar-pacote.py
 Depois faça commit e peça a publicação (veja "Atualizar o site" no README).
 """
 import os
+import subprocess
+import time
 import zipfile
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,9 +40,30 @@ CLIENTE = [("painel-cliente/" + destino, origem) for destino, origem in [
 ]]
 ARQUIVOS = SITE_PUBLICO + PAINEL + CLIENTE
 
+
+def data_do_arquivo(origem):
+    """Data gravada no zip (vira a "última modificação" do arquivo no servidor).
+
+    Precisa mudar quando o conteúdo muda: o navegador pergunta ao servidor "mudou desde tal data?"
+    e, com a mesma data de antes, recebe "não mudou" e continua mostrando a versão antiga.
+    Arquivo igual ao último commit: a data desse commit (o mesmo conteúdo gera o mesmo zip).
+    Arquivo alterado e ainda não salvo no git: a data de agora.
+    """
+    def git(*args):
+        return subprocess.run(["git", "-C", RAIZ] + list(args), capture_output=True, text=True).stdout.strip()
+    try:
+        alterado = git("status", "--porcelain", "--", origem)
+        quando = git("log", "-1", "--format=%ct", "--", origem)
+        if quando and not alterado:
+            return time.gmtime(int(quando))[:6]
+    except OSError:
+        pass
+    return time.gmtime()[:6]
+
+
 with zipfile.ZipFile(DESTINO, "w", zipfile.ZIP_DEFLATED) as z:
     for destino, origem in ARQUIVOS:
-        info = zipfile.ZipInfo(destino, date_time=(2026, 1, 1, 0, 0, 0))   # data fixa: mesmo conteúdo, mesmo zip
+        info = zipfile.ZipInfo(destino, date_time=data_do_arquivo(origem))
         info.compress_type = zipfile.ZIP_DEFLATED
         info.external_attr = 0o644 << 16
         with open(os.path.join(RAIZ, origem), "rb") as f:
