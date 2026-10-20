@@ -14,7 +14,7 @@ Quando uma versão mexer no banco, ela também traz um script para desfazer a mu
 
 ## v1.7.5 · 20/10/2026: quadro do Gestor igual na página e no painel do cliente (ponto de restauração `versao-1.7.5`)
 
-- **Situação:** pronta e testada; aguardando publicação.
+- **Publicada em 20/10/2026:** os 28 arquivos do site, do painel e da página do cliente no ar conferidos contra o pacote.
 - **Na página do perfil:** os links e avisos do Gestor aparecem sempre por último, depois dos botões do perfil (e antes de "Salvar contato" e "Compartilhar").
 - **Mesmo botão nos dois lugares:** na página do perfil e no painel do cliente, os links e avisos do Gestor usam o mesmo botão roxo (cor, fonte, tamanho e etiqueta "Patrocinado" iguais), ocupando a largura da coluna.
 - Só aparência; banco não mudou.
