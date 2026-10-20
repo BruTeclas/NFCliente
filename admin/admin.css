@@ -353,3 +353,9 @@ label i { color: var(--texto2); width: 16px; text-align: center; }
 .gestor-regras { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--linha); border-radius: 12px; background: var(--cinza-claro); }
 .gestor-regras label { margin-top: 10px; }
 .gestor-marcar-todos { display: flex; gap: 6px; margin-top: 8px; }
+
+/* Janela do link/aviso: mais larga, e campos lado a lado só quando cabem (v1.7.4) */
+.modal.modal-largo { max-width: 620px; }
+.modal .grade { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.modal .grade > * { min-width: 0; }
+.modal input, .modal select, .modal textarea { min-width: 0; max-width: 100%; }

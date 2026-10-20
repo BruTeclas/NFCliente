@@ -12,6 +12,11 @@ Cada versão publicada ganha um **ponto de restauração** no GitHub, um branch 
 
 Quando uma versão mexer no banco, ela também traz um script para desfazer a mudança. Os scripts ficam em `supabase/versoes/`.
 
+## v1.7.4 · 20/10/2026: janela de link/aviso cabe inteira na tela (ponto de restauração `versao-1.7.4`)
+
+- A janela "Novo link ou aviso" ficou mais larga, e os campos de data e de cliques ficam lado a lado só quando cabem (no celular, um embaixo do outro). Antes, os campos de data e hora passavam da borda da janela.
+- Só aparência do painel; banco e páginas não mudaram.
+
 ## v1.7.3 · 20/10/2026: links e avisos na página do perfil, com regras de saída do ar (ponto de restauração `versao-1.7.3`)
 
 - **Publicada em 20/10/2026:** banco atualizado e os 28 arquivos do site, do painel e da página do cliente no ar conferidos um a um contra o pacote.

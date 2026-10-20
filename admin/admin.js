@@ -1387,6 +1387,7 @@
         el("button", { class: "btn primario", type: "button", text: "Salvar", onclick: salvarAviso })
       ])
     ]);
+    m.caixa.classList.add("modal-largo");   // formulário longo, com campos de data e hora
   }
 
   function mostrarClientes() {
