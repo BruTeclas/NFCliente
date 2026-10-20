@@ -14,7 +14,7 @@ Quando uma versão mexer no banco, ela também traz um script para desfazer a mu
 
 ## v1.7.4 · 20/10/2026: janela de link/aviso cabe inteira na tela (ponto de restauração `versao-1.7.4`)
 
-- A janela "Novo link ou aviso" ficou mais larga, e os campos de data e de cliques ficam lado a lado só quando cabem (no celular, um embaixo do outro). Antes, os campos de data e hora passavam da borda da janela.
+- **Publicada em 20/10/2026.** A janela "Novo link ou aviso" ficou mais larga, e os campos de data e de cliques ficam lado a lado só quando cabem (no celular, um embaixo do outro). Antes, os campos de data e hora passavam da borda da janela.
 - Só aparência do painel; banco e páginas não mudaram.
 
 ## v1.7.3 · 20/10/2026: links e avisos na página do perfil, com regras de saída do ar (ponto de restauração `versao-1.7.3`)
