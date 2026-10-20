@@ -14,7 +14,7 @@ Quando uma versão mexer no banco, ela também traz um script para desfazer a mu
 
 ## v1.7.3 · 20/10/2026: links e avisos na página do perfil, com regras de saída do ar (ponto de restauração `versao-1.7.3`)
 
-- **Situação:** banco já atualizado; site pronto e testado, aguardando publicação.
+- **Publicada em 20/10/2026:** banco atualizado e os 28 arquivos do site, do painel e da página do cliente no ar conferidos um a um contra o pacote.
 - **Onde aparece:** painel do cliente, página do perfil (visitantes) ou os dois. Na página, fica logo abaixo dos destaques; etiqueta "Patrocinado" opcional.
 - **Para quem:** todos os perfis, segmentos (com refinamento opcional por especialidade) ou perfis escolhidos, com "Marcar todos".
 - **Quando sai do ar:** data/hora de fim, máximo de cliques por perfil e/ou no total; vale a primeira regra atingida. Data de início opcional (agendado).
