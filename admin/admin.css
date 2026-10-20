@@ -346,3 +346,10 @@ label i { color: var(--texto2); width: 16px; text-align: center; }
 .rotulo-esp { font-size: .85rem; font-weight: 500; margin-top: 12px; }
 .filtro-esp { margin: -6px 0 14px; }
 @media (max-width: 560px) { .gestor-especialidades { margin-left: 0; } }
+
+/* Links e avisos com regras (v1.7.3) */
+.gestor-situacao { font-weight: 500; }
+.gestor-situacao.ativo { color: var(--verde); }
+.gestor-regras { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--linha); border-radius: 12px; background: var(--cinza-claro); }
+.gestor-regras label { margin-top: 10px; }
+.gestor-marcar-todos { display: flex; gap: 6px; margin-top: 8px; }

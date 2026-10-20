@@ -18,14 +18,19 @@
 
   if (!/^[a-z0-9-]{1,40}$/i.test(slug)) return indisponivel();
 
-  Publico.perfil(slug).then(function (d) {
+  Publico.perfil(slug).then(function (r) {
+    var d = r && r.dados;
     if (!d && Publico.semDadosDemo()) return aviso("fa-solid fa-flask", "Modo demonstração", "Abra o painel (/admin/) neste navegador para criar os perfis de exemplo.");
     if (!d) return indisponivel();
     document.title = d.nome || "Links";
     var desc = document.createElement("meta");
     desc.name = "description"; desc.content = (d.descricao || "").split("\n")[0];
     document.head.appendChild(desc);
-    Perfil.render(app, d, { urlPublica: Publico.urlPerfil(slug) });
+    Perfil.render(app, d, {
+      urlPublica: Publico.urlPerfil(slug),
+      avisos: r.avisos,   // links e avisos do administrador (v1.7.3)
+      aoClicarAviso: function (a) { Publico.registrarClique(a.id, slug); }
+    });
   }).catch(function () {
     aviso("fa-solid fa-wifi", "Não foi possível carregar", "Verifique sua conexão e tente novamente.");
   });

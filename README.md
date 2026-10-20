@@ -117,7 +117,12 @@ A aba **Gestor** reúne o que só o administrador mexe:
 - **Segmentos:** a lista de tipos de negócio (Beleza, Pet, Academia…). Você inclui, renomeia e exclui. Excluir não apaga perfis: eles ficam "sem segmento".
 - **Especialidades (v1.7.2):** dentro de cada segmento, os micro segmentos (ex.: Salão de Beleza → Lash Design, Manicure, Cabeleireira). Você inclui, renomeia e exclui no próprio cartão do segmento.
 - **Segmento e especialidades nos perfis:** no editor do perfil, em "Cliente e cobrança": um segmento e as especialidades dele que o perfil faz. O cliente também escolhe no painel dele, só entre os da lista. A lista de perfis filtra por segmento e, depois, refina por especialidade (mostra quem tem qualquer uma das marcadas). O banco descarta sozinho especialidades de outro segmento.
-- **Links e avisos nos painéis dos clientes:** por exemplo, o botão **"Chame o Suporte"** (link, e-mail ou só o número do WhatsApp) ou um aviso ("Manutenção sábado às 22h"). Escolha para quem aparece: todos, alguns segmentos ou alguns perfis. Aparece no topo do painel em que o cliente edita a página; ele vê, mas não altera. Dá para ligar, desligar, editar e excluir.
+- **Links e avisos:** por exemplo, o botão **"Chame o Suporte"** (link, e-mail ou só o número do WhatsApp) ou um aviso ("Manutenção sábado às 22h").
+  - **Onde aparece (v1.7.3):** no painel em que o cliente edita a página, na **página do perfil** para os visitantes (logo abaixo dos destaques, com a etiqueta "Patrocinado" se você marcar) ou nos dois.
+  - **Para quem:** todos os perfis, alguns segmentos (com refinamento opcional por especialidade) ou perfis escolhidos ("Marcar todos" ajuda).
+  - **Quando sai do ar:** na primeira regra atingida — data e hora de fim, máximo de cliques por perfil (sai só daquele perfil) ou máximo de cliques no total (sai de todos). Pode ter data de início (fica "Agendado"). Sem regras, fica até você desligar.
+  - **Cliques:** o Gestor mostra a situação (Ativo, Agendado, Encerrado por data ou por cliques), o total e o botão "Cliques" com a conta por perfil. O mesmo aparelho (endereço de internet) conta uma vez por hora; o banco guarda só um código embaralhado, nunca o endereço.
+  - **Sem divulgação:** no cadastro do cliente, a caixa "Não exibir divulgação" esconde das páginas dele o que estiver marcado para a página do perfil.
 
 ### Acesso ao painel
 

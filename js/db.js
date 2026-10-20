@@ -123,6 +123,18 @@
     if (/^[\d\s()+.-]+$/.test(u) && dig.length >= 10 && dig.length <= 13) return "https://wa.me/" + (dig.length <= 11 ? "55" + dig : dig);
     return u;
   }
+  function dataAviso(x) {
+    if (!x) return null;
+    var d = new Date(x);
+    if (isNaN(d.getTime())) throw erro("Data inválida.");
+    return d.toISOString();
+  }
+  function maximoAviso(x, qual) {
+    if (x === "" || x == null) return null;
+    var n = Number(x);
+    if (!Number.isInteger(n) || n < 1 || n > 10000000) throw erro("Máximo de cliques " + qual + " inválido: use um número inteiro a partir de 1.");
+    return n;
+  }
   function validarAviso(a) {
     a = a || {};
     var r = {
@@ -133,6 +145,14 @@
       icone: ICONES_AVISO.indexOf(a.icone) >= 0 ? a.icone : ICONES_AVISO[0],
       alvo: ["todos", "segmentos", "perfis"].indexOf(a.alvo) >= 0 ? a.alvo : "todos",
       segmentos: Array.isArray(a.segmentos) ? a.segmentos : [],
+      especialidades: Array.isArray(a.especialidades) ? a.especialidades : [],
+      // v1.7.3: onde aparece e quando sai do ar (a primeira regra atingida)
+      onde: ["painel", "pagina", "ambos"].indexOf(a.onde) >= 0 ? a.onde : "painel",
+      patrocinado: !!a.patrocinado,
+      inicio: dataAviso(a.inicio),
+      fim: dataAviso(a.fim),
+      max_cliques_perfil: a.tipo === "aviso" ? null : maximoAviso(a.max_cliques_perfil, "por perfil"),
+      max_cliques_total: a.tipo === "aviso" ? null : maximoAviso(a.max_cliques_total, "no total"),
       perfis: Array.isArray(a.perfis) ? a.perfis : [],
       ativo: a.ativo !== false
     };
@@ -143,7 +163,8 @@
       throw erro("Endereço inválido. Use um link começando com https://, um e-mail (mailto:) ou só o número do WhatsApp com DDD.");
     if (r.alvo === "segmentos" && !r.segmentos.length) throw erro("Escolha pelo menos um segmento.");
     if (r.alvo === "perfis" && !r.perfis.length) throw erro("Escolha pelo menos um perfil.");
-    if (r.alvo !== "segmentos") r.segmentos = [];
+    if (r.inicio && r.fim && r.fim <= r.inicio) throw erro("A data de fim precisa ser depois da data de início.");
+    if (r.alvo !== "segmentos") { r.segmentos = []; r.especialidades = []; }
     if (r.alvo !== "perfis") r.perfis = [];
     return r;
   }
@@ -246,6 +267,7 @@
       r.valor_mensal = Math.round(n * 100) / 100;
     } else r.valor_mensal = null;
     r.observacoes = texto(c.observacoes);
+    r.sem_divulgacao = !!c.sem_divulgacao;   // v1.7.3: sem links e avisos do administrador na página
     return r;
   }
 
@@ -558,6 +580,12 @@
         return Promise.resolve();
       },
       listarAvisos: function () { return Promise.resolve(lerLista("bt_demo_avisos")); },
+      listarCliquesAviso: function (id) {
+        var c = {};
+        try { c = JSON.parse(guarda.ler("bt_demo_cliques")) || {}; } catch (e) { c = {}; }
+        return Promise.resolve(Object.keys(c[id] || {}).map(function (pid) { return { perfil_id: pid, cliques: c[id][pid] }; })
+          .sort(function (a, b) { return b.cliques - a.cliques; }));
+      },
       salvarAviso: function (id, a) {
         return Promise.resolve().then(function () {
           var v = validarAviso(a), lista = lerLista("bt_demo_avisos");
@@ -818,6 +846,9 @@
       listarAvisos: function () {
         return sb.from("avisos_clientes").select("*").order("ordem").order("criado_em").then(function (r) { return checar(r, "aviso"); });
       },
+      listarCliquesAviso: function (id) {
+        return sb.from("avisos_cliques").select("perfil_id, cliques").eq("aviso_id", id).order("cliques", { ascending: false }).then(function (r) { return checar(r, "aviso"); });
+      },
       salvarAviso: function (id, a) {
         return Promise.resolve().then(function () {
           var v = validarAviso(a), q = sb.from("avisos_clientes");
@@ -842,7 +873,7 @@
     ["entrar", "sair", "recuperarSenha", "alterarSenha", "listar", "obter", "criar", "salvar", "excluir", "enviarImagem",
      "removerImagem", "perfilPublico", "listarClientes", "obterCliente", "criarCliente", "salvarCliente", "excluirCliente",
      "listarSegmentos", "salvarSegmento", "excluirSegmento", "listarAvisos", "salvarAviso", "excluirAviso",
-     "listarEspecialidades", "salvarEspecialidade", "excluirEspecialidade"]
+     "listarEspecialidades", "salvarEspecialidade", "excluirEspecialidade", "listarCliquesAviso"]
       .forEach(function (k) { d[k] = falha; });
     return d;
   }

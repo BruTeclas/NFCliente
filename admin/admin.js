@@ -1191,84 +1191,177 @@
     ]);
   }
 
+  var ONDE_NOMES = { painel: "Painel do cliente", pagina: "Página do perfil", ambos: "Painel e página" };
+  function dataHoraBR(iso) {
+    var d = new Date(iso);
+    return isNaN(d.getTime()) ? "" : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+  // Data do banco → campo "data e hora" (no horário deste computador), e o contrário
+  function paraCampoData(iso) {
+    var d = iso ? new Date(iso) : null;
+    if (!d || isNaN(d.getTime())) return "";
+    var z = function (n) { return String(n).padStart(2, "0"); };
+    return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate()) + "T" + z(d.getHours()) + ":" + z(d.getMinutes());
+  }
+  function deCampoData(v) { return v ? new Date(v).toISOString() : null; }
+  // Situação de um link/aviso (v1.7.3). O limite por perfil não encerra para todos.
+  function estadoAviso(a) {
+    var agora = Date.now();
+    if (!a.ativo) return { texto: "Desligado", ativo: false };
+    if (a.inicio && new Date(a.inicio).getTime() > agora) return { texto: "Agendado para " + dataHoraBR(a.inicio), ativo: false };
+    if (a.fim && new Date(a.fim).getTime() <= agora) return { texto: "Encerrado por data", ativo: false };
+    if (a.max_cliques_total && (a.cliques_total || 0) >= a.max_cliques_total) return { texto: "Encerrado por cliques", ativo: false };
+    return { texto: "Ativo", ativo: true };
+  }
+
   function descreverAlvo(a) {
-    if (a.alvo === "segmentos") return "Segmentos: " + (a.segmentos || []).map(function (id) { return nomeSegmento(id) || "(excluído)"; }).join(", ");
+    if (a.alvo === "segmentos") {
+      var es = (a.especialidades || []).map(function (id) { var e = estado.especialidades.filter(function (x) { return x.id === id; })[0]; return e ? e.nome : null; }).filter(Boolean);
+      return "Segmentos: " + (a.segmentos || []).map(function (id) { return nomeSegmento(id) || "(excluído)"; }).join(", ") + (es.length ? " (" + es.join(", ") + ")" : "");
+    }
     if (a.alvo === "perfis") { var n = (a.perfis || []).length; return n + (n === 1 ? " perfil" : " perfis"); }
-    return "Todos os clientes";
+    return "Todos os perfis";
+  }
+  function verCliques(a) {
+    DB.listarCliquesAviso(a.id).then(function (lista) {
+      var nomes = {};
+      estado.perfis.forEach(function (p) { nomes[p.id] = nomeDe(p) + " (/" + p.slug + ")"; });
+      var m = abrirModal([
+        el("h2", { text: "Cliques em \"" + a.titulo + "\"" }),
+        el("p", { text: (a.cliques_total || 0) + " no total. O mesmo aparelho conta uma vez por hora." }),
+        (lista || []).length ? el("div", { class: "gestor-lista" }, lista.map(function (c) {
+          return el("div", { class: "gestor-linha" }, [el("div", { class: "gestor-info" }, [el("strong", { text: nomes[c.perfil_id] || "(perfil excluído)" })]), el("strong", { text: String(c.cliques) })]);
+        })) : el("p", { class: "sub", text: "Nenhum clique ainda." }),
+        el("div", { class: "modal-botoes" }, [el("button", { class: "btn primario", type: "button", text: "Fechar", onclick: function () { m.fechar(); } })])
+      ]);
+    }).catch(falhou);
   }
   function cartaoAvisos() {
     var lista = el("div", { class: "gestor-lista" });
     if (!estado.avisos.length) lista.appendChild(el("p", { class: "sub", text: "Nenhum link ou aviso ainda." }));
     estado.avisos.forEach(function (a) {
-      lista.appendChild(el("div", { class: "gestor-linha" + (a.ativo ? "" : " desligado") }, [
+      var st = estadoAviso(a), regras = [];
+      if (a.fim) regras.push("até " + dataHoraBR(a.fim));
+      if (a.max_cliques_perfil) regras.push("máx. " + a.max_cliques_perfil + " por perfil");
+      if (a.max_cliques_total) regras.push("máx. " + a.max_cliques_total + " no total");
+      var link = a.tipo !== "aviso";
+      lista.appendChild(el("div", { class: "gestor-linha" + (st.ativo ? "" : " desligado") }, [
         el("span", { class: "gestor-icone" }, [icone(a.icone || "fa-solid fa-link")]),
         el("div", { class: "gestor-info" }, [
-          el("strong", { text: a.titulo }),
-          el("small", { text: (a.tipo === "aviso" ? "Aviso" : "Link") + " · " + descreverAlvo(a) + (a.ativo ? "" : " · desligado") })
+          el("strong", {}, [a.titulo, a.patrocinado ? el("span", { class: "selo neutro", style: "margin-left:6px", text: "Patrocinado" }) : null]),
+          el("small", { text: (link ? "Link" : "Aviso") + " · " + (ONDE_NOMES[a.onde] || ONDE_NOMES.painel) + " · " + descreverAlvo(a) }),
+          el("small", { class: "gestor-situacao" + (st.ativo ? " ativo" : ""), text: st.texto + (link ? " · " + (a.cliques_total || 0) + ((a.cliques_total || 0) === 1 ? " clique" : " cliques") : "") + (regras.length ? " · " + regras.join(" · ") : "") })
         ]),
         el("div", { class: "gestor-acoes" }, [
           el("button", { class: "btn pequeno", type: "button", onclick: function () { formularioAviso(a); } }, [icone("fa-solid fa-pen"), " Editar"]),
+          link && a.cliques_total ? el("button", { class: "btn pequeno", type: "button", onclick: function () { verCliques(a); } }, [icone("fa-solid fa-chart-simple"), " Cliques"]) : null,
           el("button", { class: "btn pequeno", type: "button", onclick: function () {
             DB.salvarAviso(a.id, Object.assign({}, a, { ativo: !a.ativo })).then(function () { toast(a.ativo ? "Desligado." : "Ligado. ✅"); carregarGestor(); }).catch(falhou);
           } }, [icone(a.ativo ? "fa-solid fa-toggle-on" : "fa-solid fa-toggle-off"), a.ativo ? " Desligar" : " Ligar"]),
           el("button", { class: "btn pequeno icone perigo-leve", type: "button", title: "Excluir", "aria-label": "Excluir " + a.titulo, onclick: function () {
-            confirmar({ titulo: "Excluir \"" + a.titulo + "\"?", texto: "Some dos painéis dos clientes na próxima vez que eles abrirem.", botao: "Excluir", classe: "perigo" }).then(function (sim) {
+            confirmar({ titulo: "Excluir \"" + a.titulo + "\"?", texto: "Some dos painéis e das páginas, e a contagem de cliques é apagada.", botao: "Excluir", classe: "perigo" }).then(function (sim) {
               if (sim) return DB.excluirAviso(a.id).then(function () { toast("Excluído."); carregarGestor(); });
             }).catch(falhou);
           } }, [icone("fa-solid fa-trash-can")])
         ])
       ]));
     });
-    return cartao("fa-solid fa-bullhorn", "Links e avisos nos painéis dos clientes", [
-      el("p", { class: "sub", style: "margin:-6px 0 14px", text: "Aparecem no topo do painel em que o cliente edita a página (o link que você envia). Ele vê, mas não altera. Exemplo: \"Chame o Suporte\"." }),
+    return cartao("fa-solid fa-bullhorn", "Links e avisos", [
+      el("p", { class: "sub", style: "margin:-6px 0 14px", text: "Aparecem no painel em que o cliente edita a página (ex.: \"Chame o Suporte\"), na página do perfil para os visitantes (ex.: uma promoção) ou nos dois. Podem sair do ar sozinhos por data ou por número de cliques." }),
       el("button", { class: "btn primario", type: "button", style: "margin-bottom:14px", onclick: function () { formularioAviso(null); } }, [icone("fa-solid fa-plus"), " Novo link ou aviso"]),
       lista
     ]);
   }
 
   function formularioAviso(a) {
-    var v = Object.assign({ tipo: "link", titulo: "", texto: "", url: "", icone: DB.ICONES_AVISO[0], alvo: "todos", segmentos: [], perfis: [], ativo: true }, a || {});
-    var tipo = el("select", {}, [el("option", { value: "link", text: "Link (botão)" }), el("option", { value: "aviso", text: "Aviso (mensagem)" })]);
-    tipo.value = v.tipo;
+    var v = Object.assign({ tipo: "link", titulo: "", texto: "", url: "", icone: DB.ICONES_AVISO[0], onde: "painel", patrocinado: false, alvo: "todos",
+      segmentos: [], especialidades: [], perfis: [], inicio: null, fim: null, max_cliques_perfil: null, max_cliques_total: null, ativo: true }, a || {});
+    function lista(opcoes, valor) {
+      var s = el("select");
+      opcoes.forEach(function (o) { s.appendChild(el("option", { value: o[0], text: o[1] })); });
+      s.value = valor;
+      return s;
+    }
+    var tipo = lista([["link", "Link (botão)"], ["aviso", "Aviso (mensagem)"]], v.tipo);
     var titulo = el("input", { type: "text", maxlength: "60", placeholder: "Ex.: Chame o Suporte" });
     titulo.value = v.titulo;
     var url = el("input", { type: "text", placeholder: "https://... ou o WhatsApp com DDD" });
     url.value = v.url || "";
     var texto = el("textarea", { maxlength: "300", placeholder: "Opcional no link; a mensagem, no aviso" });
     texto.value = v.texto || "";
-    var iconeSel = el("select");
-    DB.ICONES_AVISO.forEach(function (i) { iconeSel.appendChild(el("option", { value: i, text: ICONES_NOMES[i] || i })); });
-    iconeSel.value = v.icone || DB.ICONES_AVISO[0];
-    var alvoSel = el("select", {}, [el("option", { value: "todos", text: "Todos os clientes" }), el("option", { value: "segmentos", text: "Só alguns segmentos" }), el("option", { value: "perfis", text: "Só alguns perfis" })]);
-    alvoSel.value = v.alvo;
-    function caixas(itens, marcados) {
+    var iconeSel = lista(DB.ICONES_AVISO.map(function (i) { return [i, ICONES_NOMES[i] || i]; }), v.icone || DB.ICONES_AVISO[0]);
+    var onde = lista([["painel", "No painel do cliente (para o dono do perfil)"], ["pagina", "Na página do perfil (para os visitantes)"], ["ambos", "Nos dois"]], v.onde || "painel");
+    var patro = el("input", { type: "checkbox" });
+    patro.checked = !!v.patrocinado;
+    var campoPatro = el("label", { class: "gestor-marcar" }, [patro, "Mostrar a etiqueta \"Patrocinado\" na página"]);
+    var alvoSel = lista([["todos", "Todos os perfis"], ["segmentos", "Só alguns segmentos"], ["perfis", "Só alguns perfis"]], v.alvo);
+    function caixas(itens, marcadosIni) {
       return el("div", { class: "gestor-caixas" }, itens.map(function (it) {
         var c = el("input", { type: "checkbox", value: it.id });
-        c.checked = marcados.indexOf(it.id) >= 0;
+        c.checked = marcadosIni.indexOf(it.id) >= 0;
         return el("label", { class: "gestor-marcar" }, [c, it.nome]);
       }));
     }
+    function marcados(caixa) { return [].slice.call(caixa.querySelectorAll("input:checked")).map(function (c) { return c.value; }); }
     var segs = caixas(estado.segmentos.map(function (s) { return { id: s.id, nome: s.nome }; }), v.segmentos || []);
+    // Especialidades dos segmentos marcados: refinam o público (opcional)
+    var espMarcadas = (v.especialidades || []).slice(), caixaEsp = el("div");
+    function desenharEspAlvo() {
+      var segIds = marcados(segs), possiveis = estado.especialidades.filter(function (e) { return segIds.indexOf(e.segmento_id) >= 0; });
+      espMarcadas = espMarcadas.filter(function (id) { return possiveis.some(function (e) { return e.id === id; }); });
+      caixaEsp.innerHTML = "";
+      if (!possiveis.length) return;
+      caixaEsp.appendChild(el("div", { class: "dica", text: "Refinar por especialidade (opcional): marcando alguma, vale só para os perfis que tenham pelo menos uma delas." }));
+      caixaEsp.appendChild(el("div", { class: "esp-chips" }, possiveis.map(function (e) {
+        var c = el("input", { type: "checkbox" });
+        c.checked = espMarcadas.indexOf(e.id) >= 0;
+        var rot = el("label", { class: "esp-chip" + (c.checked ? " marcado" : "") }, [c, e.nome]);
+        c.addEventListener("change", function () {
+          rot.classList.toggle("marcado", c.checked);
+          espMarcadas = espMarcadas.filter(function (x) { return x !== e.id; });
+          if (c.checked) espMarcadas.push(e.id);
+        });
+        return rot;
+      })));
+    }
+    segs.addEventListener("change", desenharEspAlvo);
+    desenharEspAlvo();
     var perfs = caixas(estado.perfis.map(function (p) { return { id: p.id, nome: nomeDe(p) + " (/" + p.slug + ")" }; }), v.perfis || []);
+    function marcarTodos(sim) { [].forEach.call(perfs.querySelectorAll("input"), function (c) { c.checked = sim; }); }
+    var inicio = el("input", { type: "datetime-local" });
+    inicio.value = paraCampoData(v.inicio);
+    var fim = el("input", { type: "datetime-local" });
+    fim.value = paraCampoData(v.fim);
+    var maxPerfil = el("input", { type: "number", min: "1", step: "1", inputmode: "numeric", placeholder: "Sem limite" });
+    maxPerfil.value = v.max_cliques_perfil || "";
+    var maxTotal = el("input", { type: "number", min: "1", step: "1", inputmode: "numeric", placeholder: "Sem limite" });
+    maxTotal.value = v.max_cliques_total || "";
     var ligado = el("input", { type: "checkbox" });
     ligado.checked = v.ativo !== false;
+
     var campoUrl = el("label", {}, ["Endereço", url, el("div", { class: "dica", text: "Link (https://...), e-mail (mailto:...) ou só o número do WhatsApp com DDD." })]);
-    var campoSegs = el("div", {}, [estado.segmentos.length ? segs : el("p", { class: "sub", text: "Cadastre segmentos primeiro, no cartão \"Segmentos\"." })]);
-    var campoPerfs = el("div", {}, [perfs]);
+    var campoSegs = el("div", {}, [estado.segmentos.length ? segs : el("p", { class: "sub", text: "Cadastre segmentos primeiro, no cartão \"Segmentos\"." }), caixaEsp]);
+    var campoPerfs = el("div", {}, [
+      el("div", { class: "gestor-marcar-todos" }, [
+        el("button", { class: "btn pequeno", type: "button", text: "Marcar todos", onclick: function () { marcarTodos(true); } }),
+        el("button", { class: "btn pequeno", type: "button", text: "Desmarcar todos", onclick: function () { marcarTodos(false); } })
+      ]), perfs]);
+    var campoCliques = el("div", { class: "grade" }, [el("label", {}, ["Máx. de cliques por perfil", maxPerfil]), el("label", {}, ["Máx. de cliques no total", maxTotal])]);
     function atualizar() {
-      campoUrl.hidden = tipo.value === "aviso";
+      campoUrl.hidden = campoCliques.hidden = tipo.value === "aviso";
+      campoPatro.hidden = onde.value === "painel";
       campoSegs.hidden = alvoSel.value !== "segmentos";
       campoPerfs.hidden = alvoSel.value !== "perfis";
     }
-    tipo.addEventListener("change", atualizar);
-    alvoSel.addEventListener("change", atualizar);
+    [tipo, alvoSel, onde].forEach(function (x) { x.addEventListener("change", atualizar); });
     atualizar();
-    function marcados(caixa) { return [].slice.call(caixa.querySelectorAll("input:checked")).map(function (c) { return c.value; }); }
     var m;
     function salvarAviso() {
       DB.salvarAviso(a && a.id, {
         tipo: tipo.value, titulo: titulo.value, texto: texto.value, url: url.value, icone: iconeSel.value,
-        alvo: alvoSel.value, segmentos: marcados(segs), perfis: marcados(perfs), ativo: ligado.checked
+        onde: onde.value, patrocinado: patro.checked, alvo: alvoSel.value, segmentos: marcados(segs), especialidades: espMarcadas, perfis: marcados(perfs),
+        inicio: deCampoData(inicio.value), fim: deCampoData(fim.value), max_cliques_perfil: maxPerfil.value, max_cliques_total: maxTotal.value,
+        ativo: ligado.checked
       }).then(function () { m.fechar(); toast("Salvo! ✅"); carregarGestor(); }).catch(falhou);
     }
     m = abrirModal([
@@ -1278,9 +1371,17 @@
       campoUrl,
       el("label", {}, ["Texto", texto]),
       el("label", {}, ["Ícone", iconeSel]),
+      el("label", {}, ["Onde aparece", onde]),
+      campoPatro,
       el("label", {}, ["Para quem", alvoSel]),
       campoSegs, campoPerfs,
-      el("label", { class: "gestor-marcar" }, [ligado, "Ligado (aparece para os clientes)"]),
+      el("div", { class: "gestor-regras" }, [
+        el("strong", { text: "Quando sai do ar" }),
+        el("div", { class: "dica", text: "Sai do ar na primeira regra atingida. Deixe em branco o que não quiser usar. O limite por perfil tira só daquele perfil." }),
+        el("div", { class: "grade" }, [el("label", {}, ["Começa em (opcional)", inicio]), el("label", {}, ["Termina em", fim])]),
+        campoCliques
+      ]),
+      el("label", { class: "gestor-marcar" }, [ligado, "Ligado"]),
       el("div", { class: "modal-botoes" }, [
         el("button", { class: "btn", type: "button", text: "Cancelar", onclick: function () { m.fechar(); } }),
         el("button", { class: "btn primario", type: "button", text: "Salvar", onclick: salvarAviso })
@@ -1373,7 +1474,8 @@
       nascimento: c.nascimento || "", email: c.email || "", telefone: c.telefone ? fmtTel(c.telefone) : "",
       whatsapp: c.whatsapp ? fmtTel(c.whatsapp) : "", cep: c.cep ? fmtCep(c.cep) : "", logradouro: c.logradouro || "",
       numero: c.numero || "", complemento: c.complemento || "", bairro: c.bairro || "", cidade: c.cidade || "", uf: c.uf || "",
-      redes: redes, plano: c.plano || "", valor_mensal: fmtValor(c.valor_mensal), observacoes: c.observacoes || ""
+      redes: redes, plano: c.plano || "", valor_mensal: fmtValor(c.valor_mensal), observacoes: c.observacoes || "",
+      sem_divulgacao: !!c.sem_divulgacao
     };
   }
 
@@ -1407,6 +1509,13 @@
     var campos = {};
 
     // campo(chave, rótulo, opções): input ligado a c[chave] (ou c.redes[chave] com rede: true)
+    // v1.7.3: links e avisos marcados "na página do perfil" não aparecem nas páginas deste cliente
+    function campoSemDivulgacao() {
+      var chk = el("input", { type: "checkbox" });
+      chk.checked = !!c.sem_divulgacao;
+      chk.addEventListener("change", function () { c.sem_divulgacao = chk.checked; marcarClienteSujo(); });
+      return el("label", { class: "gestor-marcar todo" }, [chk, "Não exibir divulgação nas páginas deste cliente (links e avisos do Gestor marcados para a página do perfil)"]);
+    }
     function campo(chave, rotulo, o) {
       o = o || {};
       var alvo = o.rede ? c.redes : c;
@@ -1523,7 +1632,8 @@
       el("div", { class: "grade" }, [
         lPlano, lista,
         campo("valor_mensal", "Valor (R$)", { inputmode: "decimal", ph: "19,90", mascara: function (v) { return v.replace(/[^\d,.]/g, ""); } }),
-        campo("observacoes", "Observações", { multilinha: true, classe: "todo", ph: "Forma de pagamento, preferências, combinados..." })
+        campo("observacoes", "Observações", { multilinha: true, classe: "todo", ph: "Forma de pagamento, preferências, combinados..." }),
+        campoSemDivulgacao()
       ])
     ]));
 

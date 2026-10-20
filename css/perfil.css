@@ -157,3 +157,14 @@ button.perfil-rede { appearance: none; -webkit-appearance: none; padding: 0; fon
   opacity: 0; transition: .25s; pointer-events: none; z-index: 1100; max-width: calc(100% - 32px); text-align: center;
 }
 .perfil-toast.ver { opacity: 1; transform: translate(-50%, 0); }
+
+/* Links e avisos do administrador (v1.7.3) */
+.perfil-divulgacao { display: flex; flex-direction: column; gap: 12px; margin: 0 0 12px; }
+.perfil-botao-adm { border-color: color-mix(in srgb, var(--cor) 60%, transparent); }
+.perfil-botao-adm .ic { background: var(--cor); color: #fff; }
+.selo-patrocinado { flex: none; margin-left: auto; font-size: .64rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; padding: 2px 7px; border-radius: 999px; background: rgba(127, 127, 127, .2); color: var(--texto2); }
+.perfil-aviso-adm { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 16px; background: var(--card); border: 1px solid color-mix(in srgb, var(--cor) 50%, transparent); text-align: left; }
+.perfil-aviso-adm > i { color: var(--cor); margin-top: 3px; }
+.perfil-aviso-adm .tx { flex: 1; min-width: 0; }
+.perfil-aviso-adm .selo-patrocinado { margin-left: 8px; vertical-align: 2px; }
+.perfil-aviso-adm p { margin: 4px 0 0; color: var(--texto2); font-size: .9rem; white-space: pre-line; overflow-wrap: anywhere; }

@@ -386,6 +386,8 @@
       ]));
     });
     if (destaques.children.length) main.appendChild(destaques);
+    var divulgacao = blocoDivulgacao(opcoes);
+    if (divulgacao) main.appendChild(divulgacao);
     if (botoes.children.length) main.appendChild(botoes);
 
     var acoes = el("section", { class: "perfil-acoes" });
@@ -422,6 +424,32 @@
       ]),
       rodapeCredito("no-aviso")
     ]));
+  }
+
+  // Links e avisos do administrador na página pública (v1.7.3). Endereços só https, e-mail ou telefone;
+  // textos sempre como texto puro.
+  function blocoDivulgacao(opcoes) {
+    var lista = (opcoes.avisos || []).filter(function (a) {
+      return a && a.titulo && (a.tipo === "aviso" || /^(https:\/\/|mailto:|tel:)/i.test(String(a.url || "")));
+    });
+    if (!lista.length) return null;
+    var bloco = el("section", { class: "perfil-divulgacao", "aria-label": "Divulgação" });
+    lista.forEach(function (a) {
+      var selo = a.patrocinado ? el("span", { class: "selo-patrocinado", text: "Patrocinado" }) : null;
+      var ic = String(a.icone || "");
+      if (!/^fa-(solid|brands|regular) fa-[a-z0-9-]+$/.test(ic)) ic = a.tipo === "aviso" ? "fa-solid fa-circle-info" : "fa-solid fa-link";
+      if (a.tipo === "aviso") {
+        bloco.appendChild(el("div", { class: "perfil-aviso-adm" }, [icone(ic),
+          el("div", { class: "tx" }, [el("strong", { text: a.titulo }), selo, a.texto ? el("p", { text: a.texto }) : null])]));
+        return;
+      }
+      var externo = /^https:/i.test(a.url);
+      bloco.appendChild(el("a", {
+        class: "perfil-botao perfil-botao-adm", href: a.url, target: externo ? "_blank" : null, rel: externo ? "noopener noreferrer" : null,
+        onclick: function () { if (opcoes.aoClicarAviso) opcoes.aoClicarAviso(a); }
+      }, [el("span", { class: "ic" }, [icone(ic)]), el("span", { class: "tx" }, [a.titulo, a.texto ? el("small", { text: a.texto }) : null]), selo]));
+    });
+    return bloco;
   }
 
   window.Perfil = {

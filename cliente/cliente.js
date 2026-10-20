@@ -124,7 +124,8 @@
         el("div", {}, [el("strong", { text: a.titulo }), a.texto ? el("p", { text: a.texto }) : null])]));
     });
     if (links.length) caixa.appendChild(el("div", { class: "links-admin" }, links.map(function (a) {
-      return el("a", { class: "btn primario", href: a.url, target: "_blank", rel: "noopener noreferrer", title: a.texto || a.titulo }, [icone(a.icone || "fa-solid fa-link"), " " + a.titulo]);
+      return el("a", { class: "btn primario", href: a.url, target: "_blank", rel: "noopener noreferrer", title: a.texto || a.titulo,
+        onclick: function () { rpc("registrar_clique_aviso", { p_aviso: a.id, p_slug: est.slug }).catch(function () { /* contagem opcional */ }); } }, [icone(a.icone || "fa-solid fa-link"), " " + a.titulo]);
     })));
     return caixa;
   }

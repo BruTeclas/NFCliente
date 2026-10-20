@@ -12,6 +12,21 @@ Cada versão publicada ganha um **ponto de restauração** no GitHub, um branch 
 
 Quando uma versão mexer no banco, ela também traz um script para desfazer a mudança. Os scripts ficam em `supabase/versoes/`.
 
+## v1.7.3 · 20/10/2026: links e avisos na página do perfil, com regras de saída do ar (ponto de restauração `versao-1.7.3`)
+
+- **Situação:** banco já atualizado; site pronto e testado, aguardando publicação.
+- **Onde aparece:** painel do cliente, página do perfil (visitantes) ou os dois. Na página, fica logo abaixo dos destaques; etiqueta "Patrocinado" opcional.
+- **Para quem:** todos os perfis, segmentos (com refinamento opcional por especialidade) ou perfis escolhidos, com "Marcar todos".
+- **Quando sai do ar:** data/hora de fim, máximo de cliques por perfil e/ou no total; vale a primeira regra atingida. Data de início opcional (agendado).
+- **Cliques:** contados no banco, uma vez por hora por aparelho (só um código embaralhado do endereço fica guardado). O Gestor mostra situação, total e a conta por perfil.
+- **Cliente sem divulgação:** caixa no cadastro do cliente que esconde das páginas dele o que for marcado para a página do perfil.
+- **Banco: mudou.**
+  - Campos novos em `avisos_clientes` (onde, patrocinado, especialidades, início, fim, limites, total de cliques) e `clientes.sem_divulgacao`.
+  - Tabelas `avisos_cliques` (só o painel lê) e `avisos_cliques_recentes` (ninguém lê pela internet).
+  - Funções `avisos_do_perfil` (interna), `registrar_clique_aviso`; `perfil_publico` e `cliente_extras` passaram a usar as regras.
+  - Script: `supabase/versoes/v1.7.3.sql`, também incluído no `schema.sql`. Para desfazer: `supabase/versoes/v1.7.3-desfazer.sql`.
+- **Conferido no banco** (teste desfeito ao final): repetição do mesmo aparelho não conta; limites por perfil e total tiram o link de quem devem; vencido e agendado não aparecem; cliente sem divulgação; segmento + especialidade; visitantes não leem cliques nem a função interna. Também conferido com cliques reais pela internet.
+
 ## v1.7.2 · 19/10/2026: especialidades dentro de cada segmento (ponto de restauração `versao-1.7.2`)
 
 - **Publicada em 19/10/2026:** banco atualizado e os 28 arquivos do site, do painel e da página do cliente no ar conferidos um a um contra o pacote.
