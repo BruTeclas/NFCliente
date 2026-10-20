@@ -114,16 +114,14 @@
     }).catch(function () { /* opcional */ });
   }
   function enderecoSeguro(u) { return /^(https:\/\/|mailto:|tel:)/i.test(String(u || "")) ? u : null; }
-  // O mesmo quadro da página pública (mesmo desenho, nas cores e no tema da página do cliente)
+  // O mesmo botão do Gestor da página pública (mesmo desenho e cores)
   function blocoAvisos() {
     var bloco = Perfil.divulgacao({
       avisos: (est.avisos || []).filter(function (a) { return a.tipo === "aviso" || enderecoSeguro(a.url); }),
       aoClicarAviso: function (a) { rpc("registrar_clique_aviso", { p_aviso: a.id, p_slug: est.slug }).catch(function () { /* contagem opcional */ }); }
     });
     if (!bloco) return null;
-    var caixa = el("div", { class: "perfil perfil-mini avisos-admin" + (est.dados.tema === "claro" ? " claro" : "") }, [bloco]);
-    caixa.style.setProperty("--cor", est.dados.cor || "#7c3aed");
-    return caixa;
+    return el("div", { class: "divulgacao-painel" }, [bloco]);
   }
   function cartaoSegmento() {
     if (!est.segmentos || !est.segmentos.length) return null;

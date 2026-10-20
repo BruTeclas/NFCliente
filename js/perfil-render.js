@@ -439,16 +439,13 @@
       var selo = a.patrocinado ? el("span", { class: "selo-patrocinado", text: "Patrocinado" }) : null;
       var ic = String(a.icone || "");
       if (!/^fa-(solid|brands|regular) fa-[a-z0-9-]+$/.test(ic)) ic = a.tipo === "aviso" ? "fa-solid fa-circle-info" : "fa-solid fa-link";
-      if (a.tipo === "aviso") {
-        bloco.appendChild(el("div", { class: "perfil-aviso-adm" }, [icone(ic),
-          el("div", { class: "tx" }, [el("strong", { text: a.titulo }), selo, a.texto ? el("p", { text: a.texto }) : null])]));
-        return;
-      }
+      var conteudo = [icone(ic), el("span", { class: "tx" }, [el("strong", { text: a.titulo }), a.texto ? el("small", { text: a.texto }) : null]), selo];
+      if (a.tipo === "aviso") { bloco.appendChild(el("div", { class: "botao-gestor" }, conteudo)); return; }   // mensagem, sem clique
       var externo = /^https:/i.test(a.url);
       bloco.appendChild(el("a", {
-        class: "perfil-botao perfil-botao-adm", href: a.url, target: externo ? "_blank" : null, rel: externo ? "noopener noreferrer" : null,
+        class: "botao-gestor", href: a.url, target: externo ? "_blank" : null, rel: externo ? "noopener noreferrer" : null,
         onclick: function () { if (opcoes.aoClicarAviso) opcoes.aoClicarAviso(a); }
-      }, [el("span", { class: "ic" }, [icone(ic)]), el("span", { class: "tx" }, [a.titulo, a.texto ? el("small", { text: a.texto }) : null]), selo]));
+      }, conteudo));
     });
     return bloco;
   }

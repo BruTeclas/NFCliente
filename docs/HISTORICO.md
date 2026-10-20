@@ -16,7 +16,7 @@ Quando uma versão mexer no banco, ela também traz um script para desfazer a mu
 
 - **Situação:** pronta e testada; aguardando publicação.
 - **Na página do perfil:** os links e avisos do Gestor aparecem sempre por último, depois dos botões do perfil (e antes de "Salvar contato" e "Compartilhar").
-- **No painel do cliente:** o mesmo quadro da página, com o mesmo desenho, as cores e o tema da página do cliente (antes era um botão roxo do painel).
+- **Mesmo botão nos dois lugares:** na página do perfil e no painel do cliente, os links e avisos do Gestor usam o mesmo botão roxo (cor, fonte, tamanho e etiqueta "Patrocinado" iguais), ocupando a largura da coluna.
 - Só aparência; banco não mudou.
 
 ## v1.7.4 · 20/10/2026: janela de link/aviso cabe inteira na tela (ponto de restauração `versao-1.7.4`)

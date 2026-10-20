@@ -158,17 +158,21 @@ button.perfil-rede { appearance: none; -webkit-appearance: none; padding: 0; fon
 }
 .perfil-toast.ver { opacity: 1; transform: translate(-50%, 0); }
 
-/* Links e avisos do administrador (v1.7.3) */
-.perfil-divulgacao { display: flex; flex-direction: column; gap: 12px; margin: 12px 0 0; }
-.perfil-botao-adm { border-color: color-mix(in srgb, var(--cor) 60%, transparent); }
-.perfil-botao-adm .ic { background: var(--cor); color: #fff; }
-.selo-patrocinado { flex: none; margin-left: auto; font-size: .64rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; padding: 2px 7px; border-radius: 999px; background: rgba(127, 127, 127, .2); color: var(--texto2); }
-.perfil-aviso-adm { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 16px; background: var(--card); border: 1px solid color-mix(in srgb, var(--cor) 50%, transparent); text-align: left; }
-.perfil-aviso-adm > i { color: var(--cor); margin-top: 3px; }
-.perfil-aviso-adm .tx { flex: 1; min-width: 0; }
-.perfil-aviso-adm .selo-patrocinado { margin-left: 8px; vertical-align: 2px; }
-.perfil-aviso-adm p { margin: 4px 0 0; color: var(--texto2); font-size: .9rem; white-space: pre-line; overflow-wrap: anywhere; }
-
-/* O mesmo quadro no painel do cliente, nas cores e no tema da página dele */
-.perfil.perfil-mini { min-height: 0; padding: 12px; border-radius: 18px; background-image: none; margin: 0 0 16px; }
-.perfil-mini .perfil-divulgacao { margin: 0; }
+/* Links e avisos do Gestor: o mesmo botão roxo na página do perfil e no painel do cliente.
+   Cores, fonte e medidas fixas, para ficar idêntico nos dois lugares, qualquer que seja o tema. */
+.perfil-divulgacao { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 0; }
+.botao-gestor {
+  display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box;
+  padding: 12px 16px; border-radius: 10px; border: 1px solid #6d28d9; background: #6d28d9; color: #fff;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: .95rem; font-weight: 500; line-height: 1.35;
+  text-decoration: none; text-align: left; transition: background .15s;
+}
+a.botao-gestor { cursor: pointer; }
+a.botao-gestor:hover, a.botao-gestor:focus-visible { background: #5b21b6; border-color: #5b21b6; color: #fff; }
+.botao-gestor > i { flex: none; width: 1.25em; text-align: center; font-size: 1.05em; color: #fff; }
+.botao-gestor .tx { flex: 1; min-width: 0; }
+.botao-gestor .tx strong { display: block; font-weight: 500; }
+.botao-gestor small { display: block; margin-top: 2px; font-size: .82em; font-weight: 400; opacity: .88; white-space: pre-line; overflow-wrap: anywhere; }
+.selo-patrocinado { flex: none; margin-left: auto; font-size: .62rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; padding: 2px 7px; border-radius: 999px; background: rgba(255, 255, 255, .22); color: #fff; }
+.divulgacao-painel { margin: 0 0 16px; }
+.divulgacao-painel .perfil-divulgacao { margin: 0; }
