@@ -386,9 +386,10 @@
       ]));
     });
     if (destaques.children.length) main.appendChild(destaques);
+    if (botoes.children.length) main.appendChild(botoes);
+    // Links e avisos do administrador: sempre por último, depois dos botões do perfil
     var divulgacao = blocoDivulgacao(opcoes);
     if (divulgacao) main.appendChild(divulgacao);
-    if (botoes.children.length) main.appendChild(botoes);
 
     var acoes = el("section", { class: "perfil-acoes" });
     if (d.mostrarSalvarContato !== false) {
@@ -455,7 +456,7 @@
   window.Perfil = {
     TIPOS: TIPOS, ICONES: ICONES, DESTAQUES: DESTAQUES, resolverLink: resolverLink, oQueFalta: oQueFalta,
     numeroInternacional: numeroInternacional,
-    render: render, renderAviso: renderAviso,
+    render: render, renderAviso: renderAviso, divulgacao: blocoDivulgacao,
     gerarPix: gerarPix, copiar: copiar, avisar: avisar, el: el, icone: icone
   };
 })();

@@ -12,6 +12,13 @@ Cada versão publicada ganha um **ponto de restauração** no GitHub, um branch 
 
 Quando uma versão mexer no banco, ela também traz um script para desfazer a mudança. Os scripts ficam em `supabase/versoes/`.
 
+## v1.7.5 · 20/10/2026: quadro do Gestor igual na página e no painel do cliente (ponto de restauração `versao-1.7.5`)
+
+- **Situação:** pronta e testada; aguardando publicação.
+- **Na página do perfil:** os links e avisos do Gestor aparecem sempre por último, depois dos botões do perfil (e antes de "Salvar contato" e "Compartilhar").
+- **No painel do cliente:** o mesmo quadro da página, com o mesmo desenho, as cores e o tema da página do cliente (antes era um botão roxo do painel).
+- Só aparência; banco não mudou.
+
 ## v1.7.4 · 20/10/2026: janela de link/aviso cabe inteira na tela (ponto de restauração `versao-1.7.4`)
 
 - **Publicada em 20/10/2026.** A janela "Novo link ou aviso" ficou mais larga, e os campos de data e de cliques ficam lado a lado só quando cabem (no celular, um embaixo do outro). Antes, os campos de data e hora passavam da borda da janela.

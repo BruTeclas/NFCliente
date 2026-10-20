@@ -320,12 +320,6 @@ label i { color: var(--texto2); width: 16px; text-align: center; }
 .gestor-marcar input { width: auto; margin: 0; flex: none; }
 @media (max-width: 560px) { .gestor-linha { flex-wrap: wrap; } .gestor-acoes { width: 100%; justify-content: flex-start; } }
 
-/* Painel do cliente: links e avisos do administrador */
-.avisos-admin { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; }
-.aviso-admin { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, var(--primaria) 9%, #fff); border: 1px solid color-mix(in srgb, var(--primaria) 25%, #fff); }
-.aviso-admin > i { color: var(--primaria); margin-top: 3px; }
-.aviso-admin p { margin: 2px 0 0; color: var(--texto2); font-size: .88rem; white-space: pre-line; }
-.links-admin { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* Especialidades (v1.7.2) */
 .gestor-segmento { border: 1px solid var(--linha); border-radius: 12px; padding: 10px 12px; }

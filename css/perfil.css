@@ -159,7 +159,7 @@ button.perfil-rede { appearance: none; -webkit-appearance: none; padding: 0; fon
 .perfil-toast.ver { opacity: 1; transform: translate(-50%, 0); }
 
 /* Links e avisos do administrador (v1.7.3) */
-.perfil-divulgacao { display: flex; flex-direction: column; gap: 12px; margin: 0 0 12px; }
+.perfil-divulgacao { display: flex; flex-direction: column; gap: 12px; margin: 12px 0 0; }
 .perfil-botao-adm { border-color: color-mix(in srgb, var(--cor) 60%, transparent); }
 .perfil-botao-adm .ic { background: var(--cor); color: #fff; }
 .selo-patrocinado { flex: none; margin-left: auto; font-size: .64rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; padding: 2px 7px; border-radius: 999px; background: rgba(127, 127, 127, .2); color: var(--texto2); }
@@ -168,3 +168,7 @@ button.perfil-rede { appearance: none; -webkit-appearance: none; padding: 0; fon
 .perfil-aviso-adm .tx { flex: 1; min-width: 0; }
 .perfil-aviso-adm .selo-patrocinado { margin-left: 8px; vertical-align: 2px; }
 .perfil-aviso-adm p { margin: 4px 0 0; color: var(--texto2); font-size: .9rem; white-space: pre-line; overflow-wrap: anywhere; }
+
+/* O mesmo quadro no painel do cliente, nas cores e no tema da página dele */
+.perfil.perfil-mini { min-height: 0; padding: 12px; border-radius: 18px; background-image: none; margin: 0 0 16px; }
+.perfil-mini .perfil-divulgacao { margin: 0; }

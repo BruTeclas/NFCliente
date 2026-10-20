@@ -7,7 +7,7 @@
  */
 (function () {
   "use strict";
-  var el = Perfil.el, icone = Perfil.icone;
+  var el = Perfil.el;
   var $ = function (id) { return document.getElementById(id); };
   var cfg = window.CONFIG || {};
   var API = (cfg.supabaseUrl || "").replace(/\/+$/, ""), CHAVE = cfg.supabaseAnonKey || "";
@@ -114,19 +114,15 @@
     }).catch(function () { /* opcional */ });
   }
   function enderecoSeguro(u) { return /^(https:\/\/|mailto:|tel:)/i.test(String(u || "")) ? u : null; }
+  // O mesmo quadro da página pública (mesmo desenho, nas cores e no tema da página do cliente)
   function blocoAvisos() {
-    var avisos = (est.avisos || []).filter(function (a) { return a.tipo === "aviso"; });
-    var links = (est.avisos || []).filter(function (a) { return a.tipo !== "aviso" && enderecoSeguro(a.url); });
-    if (!avisos.length && !links.length) return null;
-    var caixa = el("div", { class: "avisos-admin" });
-    avisos.forEach(function (a) {
-      caixa.appendChild(el("div", { class: "aviso-admin" }, [icone(a.icone || "fa-solid fa-circle-info"),
-        el("div", {}, [el("strong", { text: a.titulo }), a.texto ? el("p", { text: a.texto }) : null])]));
+    var bloco = Perfil.divulgacao({
+      avisos: (est.avisos || []).filter(function (a) { return a.tipo === "aviso" || enderecoSeguro(a.url); }),
+      aoClicarAviso: function (a) { rpc("registrar_clique_aviso", { p_aviso: a.id, p_slug: est.slug }).catch(function () { /* contagem opcional */ }); }
     });
-    if (links.length) caixa.appendChild(el("div", { class: "links-admin" }, links.map(function (a) {
-      return el("a", { class: "btn primario", href: a.url, target: "_blank", rel: "noopener noreferrer", title: a.texto || a.titulo,
-        onclick: function () { rpc("registrar_clique_aviso", { p_aviso: a.id, p_slug: est.slug }).catch(function () { /* contagem opcional */ }); } }, [icone(a.icone || "fa-solid fa-link"), " " + a.titulo]);
-    })));
+    if (!bloco) return null;
+    var caixa = el("div", { class: "perfil perfil-mini avisos-admin" + (est.dados.tema === "claro" ? " claro" : "") }, [bloco]);
+    caixa.style.setProperty("--cor", est.dados.cor || "#7c3aed");
     return caixa;
   }
   function cartaoSegmento() {
