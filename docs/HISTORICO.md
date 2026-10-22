@@ -14,7 +14,7 @@ Quando uma versão mexer no banco, ela também traz um script para desfazer a mu
 
 ## v1.7.6 · 22/10/2026: galeria de produtos em carrossel (ponto de restauração `versao-1.7.6`)
 
-- **Situação:** banco e função de fotos já atualizados; site pronto e testado, aguardando publicação.
+- **Publicada em 22/10/2026:** os 28 arquivos do site, do painel e da página do cliente no ar conferidos um a um contra o pacote.
 - **Liberação no cadastro do cliente:** "Liberar galeria de produtos", com o limite de fotos (5 por padrão, até 20).
 - **Editor (painel e página do cliente):** cartão "Galeria de produtos" com até o limite de fotos, recorte quadrado na janela de ajuste, legenda e preço opcionais, setas para ordenar e remover.
 - **Página do perfil:** carrossel acima de "Salvar contato / Compartilhar", com bolinhas, setas, tela cheia e botão "Quero este" (WhatsApp da página, com legenda e preço).
