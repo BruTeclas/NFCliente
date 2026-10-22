@@ -193,6 +193,9 @@
       c.addEventListener("change", function () { d[chave] = c.checked; marcarSujo(); });
       return el("label", { class: "interruptor" }, [c, texto]);
     }
+    var galeria = cartaoGaleria(o);
+    if (galeria) form.appendChild(galeria);
+
     form.appendChild(cartao("fa-solid fa-sliders", "Botões extras", [
       el("div", { class: "grade" }, [
         interruptor("Mostrar \"Salvar contato\"", "mostrarSalvarContato"),
@@ -202,6 +205,67 @@
     ]));
 
     return { desenharLinks: desenharLinks };
+  }
+
+  // Galeria de produtos (v1.7.6): até o limite liberado no cadastro do cliente (o.galeriaMax), fotos quadradas,
+  // legenda e preço opcionais. Sem liberação: só a dica (o.galeriaDica), se houver.
+  function cartaoGaleria(o) {
+    var d = o.dados, max = o.galeriaMax || 0;
+    if (!max) return o.galeriaDica ? cartao("fa-regular fa-images", "Galeria de produtos", [el("p", { class: "dica", text: o.galeriaDica })]) : null;
+    if (!Array.isArray(d.galeria)) d.galeria = [];
+    var lista = el("div", { class: "galeria-editor" });
+    var input = el("input", { type: "file", accept: "image/*", hidden: true });
+    var btnAdd = el("button", { class: "btn", type: "button", onclick: function () { input.click(); } }, [icone("fa-solid fa-plus"), " Adicionar foto"]);
+    var contador = el("span", { class: "dica" });
+    function desenhar() {
+      lista.innerHTML = "";
+      d.galeria.forEach(function (g, i) {
+        var leg = el("input", { type: "text", maxlength: "60", placeholder: "Legenda (opcional)", "aria-label": "Legenda da foto " + (i + 1) });
+        leg.value = g.legenda || "";
+        leg.addEventListener("input", function () { g.legenda = leg.value; o.marcarSujo(); });
+        var preco = el("input", { type: "text", maxlength: "20", placeholder: "Preço (opcional)", "aria-label": "Preço da foto " + (i + 1) });
+        preco.value = g.preco || "";
+        preco.addEventListener("input", function () { g.preco = preco.value; o.marcarSujo(); });
+        function mover(passo) {
+          var j = i + passo, t = d.galeria[i];
+          d.galeria[i] = d.galeria[j]; d.galeria[j] = t;
+          desenhar(); o.marcarSujo();
+        }
+        lista.appendChild(el("div", { class: "galeria-item-ed" }, [
+          el("img", { src: g.foto, alt: "" }),
+          el("div", { class: "galeria-campos" }, [leg, preco]),
+          el("div", { class: "galeria-botoes" }, [
+            el("button", { class: "btn pequeno icone", type: "button", title: "Subir", "aria-label": "Subir foto " + (i + 1), disabled: i === 0, onclick: function () { mover(-1); } }, [icone("fa-solid fa-arrow-up")]),
+            el("button", { class: "btn pequeno icone", type: "button", title: "Descer", "aria-label": "Descer foto " + (i + 1), disabled: i === d.galeria.length - 1, onclick: function () { mover(1); } }, [icone("fa-solid fa-arrow-down")]),
+            el("button", { class: "btn pequeno icone perigo-leve", type: "button", title: "Remover", "aria-label": "Remover foto " + (i + 1), onclick: function () { d.galeria.splice(i, 1); desenhar(); o.marcarSujo(); } }, [icone("fa-solid fa-trash-can")])
+          ])
+        ]));
+      });
+      btnAdd.hidden = d.galeria.length >= max;
+      contador.textContent = d.galeria.length + " de " + max + (max === 1 ? " foto" : " fotos");
+    }
+    input.addEventListener("change", function () {
+      var arquivo = input.files[0];
+      input.value = "";
+      if (!arquivo) return;
+      btnAdd.disabled = true;
+      abrirImagem(arquivo).then(function (img) { return ajustarFoto(img, "produto"); })
+        .then(function (c) { return c && canvasParaBlob(c).then(function (blob) { return o.enviarImagem(blob, "galeria"); }); })
+        .then(function (u) {
+          if (!u) return;
+          if (o.registrarImagem) o.registrarImagem(u);
+          if (o.ativo && !o.ativo()) return;   // o editor já foi fechado
+          d.galeria.push({ id: "g" + uid(), foto: u, legenda: "", preco: "" });
+          desenhar(); o.marcarSujo();
+        })
+        .catch(o.falhou)
+        .then(function () { btnAdd.disabled = false; });
+    });
+    desenhar();
+    return cartao("fa-regular fa-images", "Galeria de produtos", [
+      el("p", { class: "sub", style: "margin:-6px 0 12px", text: "Fotos dos produtos ou trabalhos, em carrossel no fim da página. Cada foto ganha o botão \"Quero este\", que abre o WhatsApp da página com a legenda e o preço." }),
+      lista, el("div", { class: "galeria-rodape" }, [btnAdd, contador]), input
+    ]);
   }
 
   // ---------------------------------------------------------------------------
@@ -247,6 +311,8 @@
   var FORMATOS = {
     avatar: { titulo: "Ajustar foto", larg: 280, alt: 280, max: 600, circulo: true,
       texto: "Arraste para posicionar o rosto dentro do círculo e use o zoom para aproximar." },
+    produto: { titulo: "Ajustar foto do produto", larg: 280, alt: 280, max: 1080, circulo: false,
+      texto: "Arraste para posicionar o produto dentro do quadrado e use o zoom para aproximar." },
     capa: { titulo: "Ajustar foto de fundo", larg: 225, alt: 400, max: 900, circulo: false,
       texto: "A moldura é a tela do celular: o que estiver dentro dela aparece no fundo da página. Arraste para posicionar e use o zoom." }
   };

@@ -68,6 +68,15 @@ Cada perfil pode ter uma data de **próximo vencimento**.
 - **Desativado à mão:** continua desligado mesmo depois de renovar. Use **Reativar**.
 - **Quem decide é o banco:** o próprio banco confere a data a cada acesso, no horário de Brasília. Não depende de nenhuma rotina agendada nem do painel aberto. Para mudar a carência, altere o `+ 3` em `public.perfil_vencido` (`supabase/schema.sql`) e `CARENCIA_DIAS` em `js/db.js`.
 
+### Galeria de produtos (v1.7.6)
+
+Um carrossel de fotos de produtos ou trabalhos no fim da página do perfil (acima de "Salvar contato / Compartilhar").
+
+- **Liberar:** no cadastro do cliente, marque **"Liberar galeria de produtos"** e escolha o limite (começa em 5; até 20). Vale para todos os perfis do cliente. Desligar esconde a galeria da página na hora; as fotos ficam guardadas.
+- **Fotos:** no cartão **"Galeria de produtos"** do editor (no seu e no painel do cliente). Cada foto passa pela janela de ajuste (recorte quadrado) e pode ter **legenda** e **preço**. Setas mudam a ordem.
+- **Na página:** passa com o dedo (ou setas no computador), tem as bolinhas embaixo e tocar abre a foto em tela cheia. Se a página tiver WhatsApp, cada foto ganha o botão **"Quero este"**, que abre a conversa com a legenda e o preço.
+- **Segurança:** o banco confere o limite do cliente e só aceita fotos da pasta do próprio perfil; legenda e preço aparecem como texto puro.
+
 ### Teste grátis (v1.5.0)
 
 Para o cliente experimentar antes de fechar.

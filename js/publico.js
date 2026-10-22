@@ -55,7 +55,12 @@
   function perfilDemo(slug) {
     var lista = lerDemo("bt_demo_perfis", []);
     var p = (Array.isArray(lista) ? lista : []).filter(function (x) { return x && x.slug === slug; })[0];
-    return p && p.status === "ativo" && !vencido(p.vencimento) ? { dados: p.dados || {}, avisos: avisosDemo(p) } : null;
+    if (!(p && p.status === "ativo" && !vencido(p.vencimento))) return null;
+    // Galeria só se liberada no cadastro do cliente, até o limite
+    var cli = lerDemo("bt_demo_clientes", []).filter(function (c) { return c && c.id === p.cliente_id; })[0];
+    var dados = Object.assign({}, p.dados || {}), max = (cli && cli.galeria_max) || 0;
+    if (max > 0 && Array.isArray(dados.galeria)) dados.galeria = dados.galeria.slice(0, max); else delete dados.galeria;
+    return { dados: dados, avisos: avisosDemo(p) };
   }
   function cliqueDemo(avisoId, slug) {
     var p = lerDemo("bt_demo_perfis", []).filter(function (x) { return x && x.slug === slug; })[0];

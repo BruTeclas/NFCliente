@@ -17,7 +17,7 @@
   var cfg = window.CONFIG || {};
   var BUCKET = "imagens";
   var RESERVADOS = ["admin", "perfil", "js", "css", "img", "api", "assets", "index", "404", "supabase", "login", "www", "publicar", "painel", "painel-admin", "painel-cliente", "cliente", "editar", "docs", "ferramentas"];
-  var CAMPOS_CLIENTE_RESUMO = "id,nome,telefone,whatsapp,email";
+  var CAMPOS_CLIENTE_RESUMO = "id,nome,telefone,whatsapp,email,galeria_max";
   var UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
   var REDES_CLIENTE = ["instagram", "facebook", "tiktok", "youtube", "linkedin", "x", "kwai", "pinterest", "telegram", "site"];
 
@@ -268,6 +268,10 @@
     } else r.valor_mensal = null;
     r.observacoes = texto(c.observacoes);
     r.sem_divulgacao = !!c.sem_divulgacao;   // v1.7.3: sem links e avisos do administrador na página
+    // v1.7.6: galeria de produtos liberada, com o limite de fotos (0 = não liberada)
+    var gmax = c.galeria_max === "" || c.galeria_max == null ? 0 : Number(c.galeria_max);
+    if (!Number.isInteger(gmax) || gmax < 0 || gmax > 20) throw erro("Limite de fotos da galeria inválido: use um número de 1 a 20.", "galeria_max");
+    r.galeria_max = gmax;
     return r;
   }
 
@@ -426,7 +430,7 @@
     function slugEmUso(lista, slug, id) { return lista.some(function (p) { return p.slug === slug && p.id !== id; }); }
     function resumoCliente(clientes, id) {
       var c = id && clientes.filter(function (x) { return x.id === id; })[0];
-      return c ? { id: c.id, nome: c.nome, telefone: c.telefone, whatsapp: c.whatsapp, email: c.email } : null;
+      return c ? { id: c.id, nome: c.nome, telefone: c.telefone, whatsapp: c.whatsapp, email: c.email, galeria_max: c.galeria_max || 0 } : null;
     }
     function comCliente(p, clientes) { return Object.assign({}, p, { cliente: resumoCliente(clientes || lerClientes(), p.cliente_id) }); }
     function docEmUso(lista, doc, id) { return doc && lista.some(function (c) { return c.documento === doc && c.id !== id; }); }

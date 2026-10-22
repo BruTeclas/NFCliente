@@ -391,6 +391,9 @@
     var divulgacao = blocoDivulgacao(opcoes);
     if (divulgacao) main.appendChild(divulgacao);
 
+    var galeria = blocoGaleria(d);
+    if (galeria) main.appendChild(galeria);
+
     var acoes = el("section", { class: "perfil-acoes" });
     if (d.mostrarSalvarContato !== false) {
       acoes.appendChild(el("button", { class: "perfil-botao", type: "button", onclick: function () { salvarContato(d); } },
@@ -425,6 +428,71 @@
       ]),
       rodapeCredito("no-aviso")
     ]));
+  }
+
+  // Galeria de produtos (v1.7.6): carrossel; tocar abre em tela cheia; "Quero este" abre o WhatsApp da página
+  function blocoGaleria(d) {
+    var fotos = (Array.isArray(d.galeria) ? d.galeria : []).filter(function (g) { return g && imgSegura(g.foto); });
+    if (!fotos.length) return null;
+    var zap = (d.links || []).filter(function (l) { return l && l.tipo === "whatsapp" && numeroInternacional(l.numero); })[0];
+    var numero = zap ? numeroInternacional(zap.numero) : "";
+    var trilho = el("div", { class: "galeria-trilho" });
+    var pontos = el("div", { class: "galeria-pontos" });
+    fotos.forEach(function (g, i) {
+      var nome = g.legenda || "Foto " + (i + 1);
+      var msg = "Olá! Vi na sua página e tenho interesse em: " + (g.legenda || "o produto da foto " + (i + 1)) + (g.preco ? " (" + g.preco + ")" : "");
+      trilho.appendChild(el("figure", { class: "galeria-item" }, [
+        el("button", { class: "galeria-foto", type: "button", "aria-label": "Ampliar: " + nome, onclick: function () { telaCheia(fotos, i, irPara); } },
+          [el("img", { src: imgSegura(g.foto), alt: nome, loading: "lazy" })]),
+        (g.legenda || g.preco || numero) ? el("figcaption", {}, [
+          (g.legenda || g.preco) ? el("div", { class: "galeria-texto" }, [g.legenda ? el("strong", { text: g.legenda }) : null, g.preco ? el("span", { class: "galeria-preco", text: g.preco }) : null]) : null,
+          numero ? el("a", { class: "galeria-quero", href: "https://wa.me/" + numero + "?text=" + encodeURIComponent(msg), target: "_blank", rel: "noopener" }, [icone("fa-brands fa-whatsapp"), " Quero este"]) : null
+        ]) : null
+      ]));
+      pontos.appendChild(el("button", { class: "galeria-ponto", type: "button", "aria-label": "Foto " + (i + 1), onclick: function () { irPara(i); } }));
+    });
+    function atual() { return Math.round(trilho.scrollLeft / (trilho.clientWidth || 1)); }
+    function irPara(i) { trilho.scrollTo({ left: i * trilho.clientWidth, behavior: "smooth" }); }
+    function marcar() { var a = atual(); Array.prototype.forEach.call(pontos.children, function (p, i) { p.classList.toggle("ativo", i === a); }); }
+    var tempo;
+    trilho.addEventListener("scroll", function () { clearTimeout(tempo); tempo = setTimeout(marcar, 60); });
+    var varias = fotos.length > 1;
+    setTimeout(marcar, 0);
+    return el("section", { class: "perfil-galeria", "aria-label": "Galeria" }, [
+      el("div", { class: "galeria-caixa" }, [
+        trilho,
+        varias ? el("button", { class: "galeria-seta ant", type: "button", "aria-label": "Foto anterior", onclick: function () { irPara(Math.max(0, atual() - 1)); } }, [icone("fa-solid fa-chevron-left")]) : null,
+        varias ? el("button", { class: "galeria-seta prox", type: "button", "aria-label": "Próxima foto", onclick: function () { irPara(Math.min(fotos.length - 1, atual() + 1)); } }, [icone("fa-solid fa-chevron-right")]) : null
+      ]),
+      varias ? pontos : null
+    ]);
+  }
+  // Foto da galeria em tela cheia (setas e Esc no teclado; toque fora fecha). Ao fechar, o carrossel
+  // fica na última foto vista.
+  function telaCheia(fotos, i, aoFechar) {
+    var img = el("img", { alt: "" }), leg = el("div", { class: "galeria-tela-legenda" });
+    function mostrar(n) {
+      i = (n + fotos.length) % fotos.length;
+      img.src = imgSegura(fotos[i].foto);
+      img.alt = fotos[i].legenda || "Foto " + (i + 1);
+      leg.textContent = [fotos[i].legenda, fotos[i].preco].filter(Boolean).join(" · ");
+    }
+    function fechar() { document.removeEventListener("keydown", tecla); fundo.remove(); if (aoFechar) aoFechar(i); }
+    function tecla(e) {
+      var acao = { Escape: fechar, ArrowLeft: function () { mostrar(i - 1); }, ArrowRight: function () { mostrar(i + 1); } }[e.key];
+      if (acao) { e.preventDefault(); acao(); }   // as setas não rolam o carrossel que fica atrás
+    }
+    var varias = fotos.length > 1;
+    var fundo = el("div", { class: "galeria-tela", role: "dialog", "aria-modal": "true", "aria-label": "Foto ampliada" }, [
+      img, leg,
+      el("button", { class: "galeria-tela-fechar", type: "button", "aria-label": "Fechar", onclick: fechar }, [icone("fa-solid fa-xmark")]),
+      varias ? el("button", { class: "galeria-seta ant", type: "button", "aria-label": "Foto anterior", onclick: function () { mostrar(i - 1); } }, [icone("fa-solid fa-chevron-left")]) : null,
+      varias ? el("button", { class: "galeria-seta prox", type: "button", "aria-label": "Próxima foto", onclick: function () { mostrar(i + 1); } }, [icone("fa-solid fa-chevron-right")]) : null
+    ]);
+    fundo.addEventListener("click", function (e) { if (e.target === fundo) fechar(); });
+    document.addEventListener("keydown", tecla);
+    mostrar(i);
+    document.body.appendChild(fundo);
   }
 
   // Links e avisos do administrador na página pública (v1.7.3). Endereços só https, e-mail ou telefone;

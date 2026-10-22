@@ -12,6 +12,19 @@ Cada versão publicada ganha um **ponto de restauração** no GitHub, um branch 
 
 Quando uma versão mexer no banco, ela também traz um script para desfazer a mudança. Os scripts ficam em `supabase/versoes/`.
 
+## v1.7.6 · 22/10/2026: galeria de produtos em carrossel (ponto de restauração `versao-1.7.6`)
+
+- **Situação:** banco e função de fotos já atualizados; site pronto e testado, aguardando publicação.
+- **Liberação no cadastro do cliente:** "Liberar galeria de produtos", com o limite de fotos (5 por padrão, até 20).
+- **Editor (painel e página do cliente):** cartão "Galeria de produtos" com até o limite de fotos, recorte quadrado na janela de ajuste, legenda e preço opcionais, setas para ordenar e remover.
+- **Página do perfil:** carrossel acima de "Salvar contato / Compartilhar", com bolinhas, setas, tela cheia e botão "Quero este" (WhatsApp da página, com legenda e preço).
+- **Banco: mudou.**
+  - Campo `clientes.galeria_max` (0 = não liberada).
+  - Função interna `galeria_do_cliente` confere a galeria do cliente; `cliente_salvar` e `cliente_extras` passaram a tratá-la; `perfil_publico` só mostra a galeria liberada, até o limite.
+  - Script: `supabase/versoes/v1.7.6.sql`, também incluído no `schema.sql`. Para desfazer: `supabase/versoes/v1.7.6-desfazer.sql`.
+- **Função de fotos `cliente-imagem` (versão 2):** aceita o tipo "galeria".
+- **Conferido no banco** (teste desfeito ao final): sem liberação não grava; acima do limite, foto de outro perfil e `javascript:` recusados; legenda cortada em 60 letras; a página mostra só até o limite e esconde quando desligada (fotos guardadas); limite acima de 20 recusado.
+
 ## v1.7.5 · 20/10/2026: quadro do Gestor igual na página e no painel do cliente (ponto de restauração `versao-1.7.5`)
 
 - **Publicada em 20/10/2026:** os 28 arquivos do site, do painel e da página do cliente no ar conferidos contra o pacote.

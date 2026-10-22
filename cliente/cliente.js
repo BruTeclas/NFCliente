@@ -108,6 +108,7 @@
       est.segmentos = Array.isArray(j.segmentos) ? j.segmentos : [];
       est.segmento = est.segOrig = j.segmento_id || "";
       est.especialidades = Array.isArray(j.especialidades) ? j.especialidades : [];
+      est.galeriaMax = j.galeria_max || 0;
       est.esp = Array.isArray(j.minhas_especialidades) ? j.minhas_especialidades.slice() : [];
       est.espOrig = est.esp.slice().sort().join();
       desenharEditor();
@@ -172,7 +173,7 @@
     var seg = cartaoSegmento();
     if (seg) form.appendChild(seg);
     EditorPerfil.montar(form, {
-      dados: est.dados, marcarSujo: marcarSujo, falhou: falhou, enviarImagem: enviarImagem,
+      dados: est.dados, marcarSujo: marcarSujo, falhou: falhou, enviarImagem: enviarImagem, galeriaMax: est.galeriaMax || 0,
       aoMudarNome: function () { $("edTitulo").textContent = est.dados.nome || "Minha página"; }
     });
     $("edTitulo").textContent = est.dados.nome || "Minha página";

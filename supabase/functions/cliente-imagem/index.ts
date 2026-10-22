@@ -1,6 +1,6 @@
 // NFCliente · Envio de foto pelo próprio cliente (cliente.nfcliente.com.br)
 // POST com a imagem no corpo e os cabeçalhos:
-//   x-sessao: acesso do cliente (recebido depois do PIN)   x-tipo: "foto" ou "capa"
+//   x-sessao: acesso do cliente (recebido depois do PIN)   x-tipo: "foto", "capa" ou "galeria" (v1.7.6)
 // Confere o acesso no banco (cliente_autorizar_envio, até 30 envios por acesso), aceita só
 // JPEG, PNG ou WEBP de até 3 MB e grava na pasta do próprio perfil no bucket "imagens".
 const URL_SUPABASE = Deno.env.get("SUPABASE_URL")!;
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
   const sessao = req.headers.get("x-sessao") ?? "";
   const tipo = req.headers.get("x-tipo") ?? "";
   const formato = TIPOS[(req.headers.get("content-type") ?? "").split(";")[0].trim()];
-  if (!/^[A-Za-z0-9_-]{20,100}$/.test(sessao) || !["foto", "capa"].includes(tipo) || !formato) return resposta({ erro: "pedido" }, 400);
+  if (!/^[A-Za-z0-9_-]{20,100}$/.test(sessao) || !["foto", "capa", "galeria"].includes(tipo) || !formato) return resposta({ erro: "pedido" }, 400);
 
   const bytes = new Uint8Array(await req.arrayBuffer());
   if (bytes.length < 12 || bytes.length > 3 * 1024 * 1024) return resposta({ erro: "tamanho" }, 413);

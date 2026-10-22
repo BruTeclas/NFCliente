@@ -809,7 +809,10 @@
       aoMudarNome: function () { $("edTitulo").textContent = nomeDe(p); },
       enviarImagem: function (blob, chave) { return DB.enviarImagem(ed.p.id, blob, chave); },
       registrarImagem: function (u) { ed.imagensNovas.push(u); },
-      ativo: function () { return estado.ed === ed; }
+      ativo: function () { return estado.ed === ed; },
+      // Galeria de produtos: liberada no cadastro do cliente do perfil
+      galeriaMax: (p.cliente && p.cliente.galeria_max) || 0,
+      galeriaDica: p.cliente ? "A galeria não está liberada para este cliente. Libere em \"Galeria de produtos\", no cadastro dele." : "Ligue um cliente a este perfil e libere a galeria no cadastro dele."
     }).desenharLinks;
 
     // --- Cliente e cobrança (interno) --------------------------------------------------
@@ -1018,13 +1021,14 @@
     if (p.slug !== ed.orig.slug) patch.slug = p.slug;
     // Mudar o vencimento de um perfil em teste conta como efetivar
     if (ed.orig.teste_desde && DB.dataISO(p.vencimento) !== DB.dataISO(ed.orig.vencimento)) patch.teste_desde = null;
-    var antigas = [ed.orig.dados.foto, ed.orig.dados.capa];
+    var antigas = [ed.orig.dados.foto, ed.orig.dados.capa].concat((ed.orig.dados.galeria || []).map(function (g) { return g && g.foto; }));
+    function emUso(u) { return u === p.dados.foto || u === p.dados.capa || (p.dados.galeria || []).some(function (g) { return g && g.foto === u; }); }
 
     ed.salvando = DB.salvar(p.id, patch).then(function (r) {
       if (estado.ed !== ed) return true;
       // Apaga do armazenamento as imagens que deixaram de ser usadas
       antigas.concat(ed.imagensNovas).forEach(function (u) {
-        if (u && u !== p.dados.foto && u !== p.dados.capa) DB.removerImagem(u);
+        if (u && !emUso(u)) DB.removerImagem(u);
       });
       ed.imagensNovas = [];
       var slugMudou = r.slug !== ed.orig.slug;
@@ -1476,7 +1480,8 @@
       whatsapp: c.whatsapp ? fmtTel(c.whatsapp) : "", cep: c.cep ? fmtCep(c.cep) : "", logradouro: c.logradouro || "",
       numero: c.numero || "", complemento: c.complemento || "", bairro: c.bairro || "", cidade: c.cidade || "", uf: c.uf || "",
       redes: redes, plano: c.plano || "", valor_mensal: fmtValor(c.valor_mensal), observacoes: c.observacoes || "",
-      sem_divulgacao: !!c.sem_divulgacao
+      sem_divulgacao: !!c.sem_divulgacao,
+      galeria_max: c.galeria_max || 0
     };
   }
 
@@ -1511,6 +1516,24 @@
 
     // campo(chave, rótulo, opções): input ligado a c[chave] (ou c.redes[chave] com rede: true)
     // v1.7.3: links e avisos marcados "na página do perfil" não aparecem nas páginas deste cliente
+    // v1.7.6: galeria de produtos para os perfis deste cliente (até N fotos)
+    function campoGaleria() {
+      var chk = el("input", { type: "checkbox" }), num = el("input", { type: "number", min: "1", max: "20", step: "1", inputmode: "numeric" });
+      chk.checked = (c.galeria_max || 0) > 0;
+      num.value = c.galeria_max || 5;
+      function atualizar() {
+        num.disabled = !chk.checked;
+        c.galeria_max = chk.checked ? (parseInt(num.value, 10) || 0) : 0;
+        marcarClienteSujo();
+      }
+      chk.addEventListener("change", function () { if (chk.checked && !(parseInt(num.value, 10) > 0)) num.value = 5; atualizar(); });
+      num.addEventListener("input", atualizar);
+      num.disabled = !chk.checked;
+      return el("div", { class: "todo galeria-liberar" }, [
+        el("label", { class: "gestor-marcar" }, [chk, "Liberar galeria de produtos (carrossel de fotos no fim da página)"]),
+        el("label", { class: "galeria-limite" }, ["Até", num, "fotos"])
+      ]);
+    }
     function campoSemDivulgacao() {
       var chk = el("input", { type: "checkbox" });
       chk.checked = !!c.sem_divulgacao;
@@ -1634,7 +1657,8 @@
         lPlano, lista,
         campo("valor_mensal", "Valor (R$)", { inputmode: "decimal", ph: "19,90", mascara: function (v) { return v.replace(/[^\d,.]/g, ""); } }),
         campo("observacoes", "Observações", { multilinha: true, classe: "todo", ph: "Forma de pagamento, preferências, combinados..." }),
-        campoSemDivulgacao()
+        campoSemDivulgacao(),
+        campoGaleria()
       ])
     ]));
 
