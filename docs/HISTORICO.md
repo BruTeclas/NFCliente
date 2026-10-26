@@ -12,6 +12,13 @@ Cada versão publicada ganha um **ponto de restauração** no GitHub, um branch 
 
 Quando uma versão mexer no banco, ela também traz um script para desfazer a mudança. Os scripts ficam em `supabase/versoes/`.
 
+## v1.7.7 · 26/10/2026: logo NFCliente (ponto de restauração `versao-1.7.7`)
+
+- **Logo nova (Chaveiro NFC):** chaveiro roxo com as ondas de aproximação, e o nome com "NFC" em roxo e "liente" em preto (ou branco no fundo escuro).
+- **Onde aparece:** ícone da aba do navegador (site, perfis, painel e página do cliente), ícone ao salvar na tela do celular, tela de login do painel e da página do cliente, barra do painel ("NFCliente · Painel") e página inicial nfcliente.com.br (antes mostrava "BruTeclas").
+- **Kit da marca:** pasta `marca/` com a logo horizontal, vertical e só o ícone, em SVG e PNG, nas versões para fundo claro e escuro, e a foto de perfil para Instagram e WhatsApp. Cores e fonte em `marca/LEIAME.md`.
+- **Banco: não mudou.**
+
 ## v1.7.6 · 22/10/2026: galeria de produtos em carrossel (ponto de restauração `versao-1.7.6`)
 
 - **Publicada em 22/10/2026:** os 28 arquivos do site, do painel e da página do cliente no ar conferidos um a um contra o pacote.

@@ -293,6 +293,8 @@ O site está publicado na Hostinger, no plano Premium (usuário `u253849728`), c
 ```
 index.html            Página inicial do domínio (sua vitrine; personalize)
 perfil.html           Página pública de cada perfil (/<link>)
+favicon.ico, img/     Ícone da aba do navegador e logo usados pelo site, pelo painel e pela página do cliente
+marca/                Kit da logo NFCliente (SVG e PNG) para redes sociais, impressão e material de divulgação
 admin/                Painel com login (publicado em admin.nfcliente.com.br, pasta painel-admin)
   index.html, admin.js, admin.css
   redefinir-senha.html, redefinir-senha.js  Página do link "Esqueci minha senha" e do convite

@@ -23,6 +23,7 @@ SITE_PUBLICO = [(f, f) for f in [
     "css/perfil.css",
     "js/config.js", "js/perfil-render.js", "js/publico.js", "js/pagina-perfil.js",
     "js/lib/qrcode-1.0.0.min.js",
+    "favicon.ico", "img/nfcliente-icone.svg", "img/apple-touch-icon.png", "img/nfcliente-logo-escuro.svg",
 ]]
 PAINEL = [("painel-admin/" + destino, origem) for destino, origem in [
     ("index.html", "admin/index.html"), ("admin.js", "admin/admin.js"), ("admin.css", "admin/admin.css"),
@@ -31,12 +32,14 @@ PAINEL = [("painel-admin/" + destino, origem) for destino, origem in [
     ("css/perfil.css", "css/perfil.css"),
     ("js/config.js", "js/config.js"), ("js/db.js", "js/db.js"), ("js/perfil-render.js", "js/perfil-render.js"), ("js/editor-perfil.js", "js/editor-perfil.js"),
     ("js/lib/supabase-js-2.117.2.js", "js/lib/supabase-js-2.117.2.js"), ("js/lib/qrcode-1.0.0.min.js", "js/lib/qrcode-1.0.0.min.js"),
+    ("favicon.ico", "favicon.ico"), ("img/nfcliente-icone.svg", "img/nfcliente-icone.svg"), ("img/apple-touch-icon.png", "img/apple-touch-icon.png"),
 ]]
 CLIENTE = [("painel-cliente/" + destino, origem) for destino, origem in [
     ("index.html", "cliente/index.html"), ("cliente.js", "cliente/cliente.js"), (".htaccess", "cliente/.htaccess"),
     ("admin/admin.css", "admin/admin.css"), ("css/perfil.css", "css/perfil.css"),
     ("js/config.js", "js/config.js"), ("js/perfil-render.js", "js/perfil-render.js"), ("js/editor-perfil.js", "js/editor-perfil.js"),
     ("js/lib/qrcode-1.0.0.min.js", "js/lib/qrcode-1.0.0.min.js"),
+    ("favicon.ico", "favicon.ico"), ("img/nfcliente-icone.svg", "img/nfcliente-icone.svg"), ("img/apple-touch-icon.png", "img/apple-touch-icon.png"),
 ]]
 ARQUIVOS = SITE_PUBLICO + PAINEL + CLIENTE
 

@@ -20,7 +20,7 @@ window.CONFIG = {
   // Página em que o cliente edita o próprio perfil (link de configuração, v1.3.0).
   dominioCliente: "https://cliente.nfcliente.com.br",
 
-  marca: "BruTeclas",
+  marca: "NFCliente",
 
   // Crédito no rodapé de todos os perfis. O nome vira link para "url".
   // Use credito: null para não mostrar nada.
