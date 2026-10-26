@@ -14,6 +14,7 @@ Quando uma versão mexer no banco, ela também traz um script para desfazer a mu
 
 ## v1.7.7 · 26/10/2026: logo NFCliente (ponto de restauração `versao-1.7.7`)
 
+- **Publicada em 26/10/2026:** os 41 arquivos do site, do painel e da página do cliente no ar; favicon e ícone conferidos em nfcliente.com.br, admin e cliente (200).
 - **Logo nova (Chaveiro NFC):** chaveiro roxo com as ondas de aproximação, e o nome com "NFC" em roxo e "liente" em preto (ou branco no fundo escuro).
 - **Onde aparece:** ícone da aba do navegador (site, perfis, painel e página do cliente), ícone ao salvar na tela do celular, tela de login do painel e da página do cliente, barra do painel ("NFCliente · Painel") e página inicial nfcliente.com.br (antes mostrava "BruTeclas").
 - **Kit da marca:** pasta `marca/` com a logo horizontal, vertical e só o ícone, em SVG e PNG, nas versões para fundo claro e escuro, e a foto de perfil para Instagram e WhatsApp. Cores e fonte em `marca/LEIAME.md`.
