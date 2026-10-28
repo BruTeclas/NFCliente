@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Placa de Avaliação do Google · animação</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#000}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:#0b0f1a;
+    font-family:'Liberation Sans',Arial,'DejaVu Sans',sans-serif;color:#fff}
+  .scene{position:absolute;inset:0;opacity:0}
+  .abs{position:absolute}
+  .phone{position:absolute;left:0;top:0;width:420px;height:860px;border-radius:64px;background:#111;
+    border:10px solid #2b3042;box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden;transform-origin:50% 50%}
+  .phone .scr{position:absolute;inset:0;background:#fff;color:#202124;overflow:hidden}
+  .phone .notch{position:absolute;top:10px;left:50%;margin-left:-55px;width:110px;height:30px;border-radius:20px;background:#000;z-index:9}
+  .bar{margin:54px 18px 12px;height:58px;border-radius:30px;background:#f1f3f4;display:flex;align-items:center;
+    gap:12px;padding:0 20px;font-size:21px;color:#3c4043}
+  .chips{display:flex;gap:10px;margin:0 18px 14px;font-size:17px;color:#5f6368}
+  .chips span{border:1px solid #dadce0;border-radius:16px;padding:6px 12px}
+  .card{position:absolute;left:14px;right:14px;height:112px;border-radius:18px;background:#fff;border:2px solid #e8eaed;
+    padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .card b{display:block;font-size:24px;color:#202124}
+  .card .r{font-size:20px;margin-top:6px;color:#5f6368}
+  .card .r i{font-style:normal;color:#fbbc04;letter-spacing:1px}
+  .card .r em{font-style:normal;color:#9aa0a6;letter-spacing:1px}
+  .card small{display:block;margin-top:4px;font-size:17px;color:#80868b}
+  .pill{position:absolute;border-radius:60px;font-weight:800;white-space:nowrap}
+  #cap{position:absolute;left:50px;right:50px;bottom:150px;text-align:center;font-size:46px;font-weight:800;line-height:1.22;
+    opacity:0;z-index:50;text-shadow:0 3px 14px rgba(0,0,0,.9);}
+  #cap span{background:rgba(0,0,0,.62);padding:4px 16px;border-radius:14px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  #cmpA .card b,#cmpB .card b{font-size:44px}#cmpA .r,#cmpB .r{font-size:34px;margin-top:10px}#cmpA small,#cmpB small{font-size:27px}
+  .gold{color:#fbbc04}
+  .grid{background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:60px 60px}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ================= CENA 1 · GANCHO ================= -->
+<div class="scene" id="s1">
+  <div class="abs" id="s1top" style="left:0;top:0;width:1080px;height:960px;background:linear-gradient(#cfd3d8,#a9aeb6);overflow:hidden">
+    <svg width="1080" height="960" viewBox="0 0 1080 960">
+      <!-- fachada -->
+      <rect x="120" y="190" width="840" height="620" fill="#8d939c"/>
+      <rect x="120" y="190" width="840" height="120" fill="#5b616b"/>
+      <text x="540" y="268" text-anchor="middle" font-size="64" font-weight="800" fill="#c9ced6" font-family="Liberation Sans, Arial">SEU NEGÓCIO</text>
+      <!-- toldo -->
+      <g>
+        <rect x="100" y="310" width="880" height="90" fill="#7a808a"/>
+        <rect x="100" y="310" width="110" height="90" fill="#9aa0a9"/><rect x="320" y="310" width="110" height="90" fill="#9aa0a9"/>
+        <rect x="540" y="310" width="110" height="90" fill="#9aa0a9"/><rect x="760" y="310" width="110" height="90" fill="#9aa0a9"/>
+      </g>
+      <!-- vitrine vazia -->
+      <rect x="160" y="430" width="760" height="380" fill="#dfe3e8"/>
+      <rect x="160" y="430" width="760" height="380" fill="url(#gl)" opacity=".4"/>
+      <defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+      <!-- mesas vazias -->
+      <rect x="220" y="650" width="150" height="14" fill="#8a7f72"/><rect x="288" y="664" width="14" height="140" fill="#8a7f72"/>
+      <rect x="470" y="650" width="150" height="14" fill="#8a7f72"/><rect x="538" y="664" width="14" height="140" fill="#8a7f72"/>
+      <rect x="720" y="650" width="150" height="14" fill="#8a7f72"/><rect x="788" y="664" width="14" height="140" fill="#8a7f72"/>
+      <!-- placa aberto -->
+      <rect x="450" y="450" width="180" height="54" rx="10" fill="#6b7078"/>
+      <text x="540" y="488" text-anchor="middle" font-size="30" font-weight="800" fill="#d8dce2" font-family="Liberation Sans, Arial">ABERTO</text>
+      <rect x="120" y="810" width="840" height="150" fill="#7d838c"/>
+      <!-- empreendedor de braços cruzados -->
+      <g id="owner" transform="translate(120 0)">
+        <circle cx="130" cy="500" r="52" fill="#d9a77c"/>
+        <path d="M80 490 Q130 430 182 490 Q150 470 80 490Z" fill="#3a2c22"/>
+        <rect x="70" y="552" width="120" height="190" rx="30" fill="#2f4f7a"/>
+        <rect x="88" y="730" width="38" height="170" rx="12" fill="#262c36"/><rect x="134" y="730" width="38" height="170" rx="12" fill="#262c36"/>
+        <path d="M64 620 Q130 690 198 620" stroke="#d9a77c" stroke-width="30" fill="none" stroke-linecap="round"/>
+        <path d="M64 650 Q130 600 198 650" stroke="#2f4f7a" stroke-width="30" fill="none" stroke-linecap="round" opacity=".0"/>
+        <path d="M110 520 Q130 508 150 520" stroke="#3a2c22" stroke-width="5" fill="none"/>
+        <path d="M112 536 Q130 528 148 538" stroke="#3a2c22" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <div class="pill" style="left:50%;top:40px;transform:translateX(-50%);background:rgba(0,0,0,.55);padding:12px 30px;font-size:34px">Seu negócio · ninguém entra</div>
+  </div>
+  <div class="abs" id="s1bot" style="left:0;top:960px;width:1080px;height:960px;background:#0b0f1a" >
+    <div class="abs grid" style="inset:0"></div>
+    <div class="phone" id="ph1"><div class="notch"></div><div class="scr">
+      <div class="bar"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" stroke="#5f6368" stroke-width="2.4" fill="none"/><path d="M15 15l6 6" stroke="#5f6368" stroke-width="2.4" stroke-linecap="round"/></svg>restaurante perto de mim</div>
+      <div class="chips"><span>Aberto agora</span><span>4,5+ ★</span><span>Preço</span></div>
+      <div id="l1" style="position:relative"></div>
+      <div id="tap" class="abs" style="width:90px;height:90px;border-radius:50%;background:rgba(66,133,244,.35);border:3px solid #4285f4;opacity:0"></div>
+    </div></div>
+  </div>
+  <div class="abs" id="s1vs" style="left:50%;top:960px;transform:translate(-50%,-50%);width:150px;height:150px;border-radius:50%;background:#ea4335;display:flex;align-items:center;justify-content:center;font-size:62px;font-weight:900;box-shadow:0 0 0 10px #0b0f1a">VS</div>
+</div>
+
+<!-- ================= CENA 2 · AGITAÇÃO ================= -->
+<div class="scene" id="s2">
+  <div class="abs" id="s2bgA" style="inset:0;background:radial-gradient(circle at 50% 45%,#4a0505 0%,#140101 70%)"></div>
+  <div class="abs" id="s2neon" style="inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-weight:900;color:#ff3b30;
+      text-shadow:0 0 14px #ff2d1f,0 0 40px #ff2d1f,0 0 90px #c40000;line-height:1.02">
+    <div id="n1" style="font-size:210px">ZERO</div>
+    <div id="n2" style="font-size:120px">AVALIAÇÕES</div>
+    <div id="n3" style="font-size:150px;margin:6px 0">=</div>
+    <div id="n4" style="font-size:210px">ZERO</div>
+    <div id="n5" style="font-size:150px">CONFIANÇA</div>
+  </div>
+  <div class="abs" id="s2b" style="inset:0;background:#0b0f1a;opacity:0">
+    <div class="abs grid" style="inset:0"></div>
+    <div class="abs" style="left:0;right:0;top:100px;text-align:center;font-size:56px;font-weight:900">O que o cliente <span style="color:#ea4335">vê</span> no Google:</div>
+    <div class="abs" id="cmpA" style="left:60px;top:240px;width:960px;height:140px"></div>
+    <div class="abs" id="cmpB" style="left:60px;top:410px;width:960px;height:140px"></div>
+    <div id="faces"></div>
+  </div>
+</div>
+
+<!-- ================= CENA 3 · SOLUÇÃO ================= -->
+<div class="scene" id="s3">
+  <div class="abs" id="photoWrap" style="inset:0;overflow:hidden;background:#000">
+    <img id="photo" src="assets/placas.jpg" style="position:absolute;left:0;top:0;width:1080px;height:1920px;transform-origin:187px 1320px">
+  </div>
+  <div class="abs" id="s3dark" style="inset:0;background:rgba(5,8,20,.0)"></div>
+  <div class="abs" id="s3title" style="left:0;right:0;top:90px;text-align:center">
+    <div style="display:inline-block;background:rgba(0,0,0,.72);border-radius:30px;padding:22px 40px">
+      <div style="font-size:64px;font-weight:900;line-height:1.1">Placa de Avaliação <span style="color:#4285f4">do</span> <span style="color:#ea4335">G</span><span style="color:#fbbc04">o</span><span style="color:#4285f4">o</span><span style="color:#34a853">g</span><span style="color:#ea4335">l</span><span style="color:#fbbc04">e</span></div>
+      <div style="font-size:36px;margin-top:10px;color:#cfd6e6">Preta ou azul · NFC + QR Code</div>
+    </div>
+  </div>
+  <div class="abs" id="ripples"></div>
+  <div class="phone" id="ph3"><div class="notch"></div><div class="scr" id="scr3">
+    <!-- tela inicial -->
+    <div id="home" class="abs" style="inset:0;background:linear-gradient(160deg,#1f2a5a,#6d28d9 60%,#0f172a)">
+      <div style="text-align:center;margin-top:120px;font-size:90px;font-weight:300;color:#fff">9:41</div>
+      <div style="text-align:center;font-size:24px;color:#dbe3ff">terça-feira</div>
+      <div id="nfcban" class="abs" style="left:20px;right:20px;top:-120px;height:100px;border-radius:26px;background:rgba(255,255,255,.95);color:#202124;padding:16px 22px;display:flex;align-items:center;gap:16px">
+        <div style="width:56px;height:56px;border-radius:14px;background:#4285f4;display:flex;align-items:center;justify-content:center;font-size:34px;color:#fff;font-weight:900">G</div>
+        <div><div style="font-size:23px;font-weight:800">Etiqueta NFC detectada</div><div style="font-size:19px;color:#5f6368">Abrindo página de avaliação…</div></div>
+      </div>
+    </div>
+    <!-- página de avaliação -->
+    <div id="rev" class="abs" style="inset:0;background:#fff;opacity:0">
+      <div style="margin-top:56px;padding:0 24px">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="width:74px;height:74px;border-radius:50%;background:#ea4335;color:#fff;font-size:40px;font-weight:900;display:flex;align-items:center;justify-content:center">S</div>
+          <div><div style="font-size:30px;font-weight:800">Seu Negócio</div><div style="font-size:19px;color:#5f6368">Avaliação pública no Google</div></div>
+        </div>
+        <div style="margin-top:40px;font-size:25px;font-weight:700;text-align:center">Como foi o atendimento?</div>
+        <div id="starrow" style="display:flex;justify-content:center;gap:6px;margin-top:20px;font-size:68px;line-height:1"></div>
+        <div id="txt" style="margin-top:36px;height:190px;border:2px solid #dadce0;border-radius:18px;padding:18px;font-size:25px;line-height:1.35;color:#202124"></div>
+        <div id="pubbtn" style="margin-top:30px;height:70px;border-radius:36px;background:#1a73e8;color:#fff;font-size:27px;font-weight:800;display:flex;align-items:center;justify-content:center">Publicar</div>
+      </div>
+      <div id="sent" class="abs" style="inset:0;background:#fff;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px">
+        <div style="width:150px;height:150px;border-radius:50%;background:#34a853;display:flex;align-items:center;justify-content:center">
+          <svg width="90" height="90" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div style="font-size:34px;font-weight:900;color:#202124">Avaliação enviada!</div>
+        <div style="font-size:24px;color:#fbbc04">★★★★★</div>
+      </div>
+    </div>
+  </div></div>
+  <div class="pill" id="s3tag" style="left:50%;top:1180px;transform:translateX(-50%);background:#fbbc04;color:#111;padding:18px 44px;font-size:44px;opacity:0">Aproxime o celular · abre na hora</div>
+</div>
+
+<!-- ================= CENA 4 · BENEFÍCIO ================= -->
+<div class="scene" id="s4">
+  <div class="abs grid" style="inset:0;background-color:#0b0f1a"></div>
+  <div id="s4qr" class="abs" style="inset:0">
+    <div class="phone" id="ph4"><div class="notch"></div><div class="scr" style="background:#000">
+      <div class="abs" style="left:-203px;top:-1212px;width:1152px;height:2048px;background:url(assets/placas.jpg) center/100% 100%"></div>
+      <div id="vf" class="abs" style="left:80px;top:290px;width:240px;height:240px;border:6px solid #fff;border-radius:28px"></div>
+      <div id="scanline" class="abs" style="left:88px;top:300px;width:224px;height:6px;background:#34a853;box-shadow:0 0 18px #34a853;border-radius:3px"></div>
+      <div id="qrbanner" class="abs" style="left:24px;right:24px;bottom:-140px;height:100px;border-radius:24px;background:#fff;color:#202124;padding:16px 22px;display:flex;align-items:center;gap:14px">
+        <div style="width:54px;height:54px;border-radius:50%;background:#4285f4;color:#fff;font-weight:900;font-size:30px;display:flex;align-items:center;justify-content:center">G</div>
+        <div><div style="font-size:23px;font-weight:800">Avaliar no Google</div><div style="font-size:18px;color:#5f6368">Toque para abrir</div></div>
+      </div>
+    </div></div>
+    <div class="pill" style="left:50%;top:150px;transform:translateX(-50%);background:rgba(255,255,255,.12);padding:16px 40px;font-size:42px">…ou leia o QR Code</div>
+  </div>
+  <div id="s4chart" class="abs" style="inset:0;opacity:0">
+    <div class="abs" style="left:60px;right:60px;top:150px;text-align:center;font-size:54px;font-weight:900">Suas avaliações <span class="gold">subindo</span></div>
+    <div class="abs" style="left:60px;top:260px;width:960px;height:700px;border-radius:36px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1)">
+      <svg width="960" height="700" viewBox="0 0 960 700">
+        <defs>
+          <linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34a853" stop-opacity=".55"/><stop offset="1" stop-color="#34a853" stop-opacity="0"/></linearGradient>
+          <clipPath id="cp"><rect id="cpr" x="0" y="0" width="0" height="700"/></clipPath>
+        </defs>
+        <g stroke="rgba(255,255,255,.12)" stroke-width="2"><path d="M60 160H900M60 300H900M60 440H900M60 580H900"/></g>
+        <g clip-path="url(#cp)">
+          <path d="M60 580 C160 560 220 540 300 500 S440 470 520 380 S700 260 780 190 S860 120 900 90 L900 640 L60 640Z" fill="url(#ar)"/>
+          <path id="ln" d="M60 580 C160 560 220 540 300 500 S440 470 520 380 S700 260 780 190 S860 120 900 90" stroke="#34a853" stroke-width="14" fill="none" stroke-linecap="round"/>
+        </g>
+        <circle id="dot" cx="60" cy="580" r="20" fill="#fbbc04" stroke="#fff" stroke-width="5"/>
+      </svg>
+      <div id="bigrate" class="abs" style="left:50px;top:36px;font-size:90px;font-weight:900"><span class="gold">★</span> <span id="rv">0,0</span></div>
+      <div id="bigcnt" class="abs" style="left:52px;top:140px;font-size:34px;color:#b8c0d4"><span id="cv">0</span> avaliações</div>
+    </div>
+    <div class="pill" id="pop1" style="left:70px;top:1020px;background:#34a853;padding:20px 44px;font-size:56px;opacity:0">Prova Social</div>
+    <div class="pill" id="pop2" style="left:260px;top:1160px;background:#4285f4;padding:20px 44px;font-size:56px;opacity:0">Topo das Pesquisas</div>
+    <div class="pill" id="pop3" style="left:110px;top:1300px;background:#fbbc04;color:#111;padding:20px 44px;font-size:56px;opacity:0">Mais Vendas</div>
+  </div>
+  <div id="s4rank" class="abs" style="inset:0;opacity:0">
+    <div class="abs" style="left:60px;right:60px;top:120px;text-align:center;font-size:54px;font-weight:900">Você sobe no <span class="gold">ranking</span></div>
+    <div class="phone" id="ph5"><div class="notch"></div><div class="scr">
+      <div class="bar"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" stroke="#5f6368" stroke-width="2.4" fill="none"/><path d="M15 15l6 6" stroke="#5f6368" stroke-width="2.4" stroke-linecap="round"/></svg>restaurante perto de mim</div>
+      <div class="chips"><span>Aberto agora</span><span>4,5+ ★</span><span>Preço</span></div>
+      <div id="l5" style="position:relative"></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ================= CENA 5 · CTA ================= -->
+<div class="scene" id="s5">
+  <div class="abs" style="inset:0;background:radial-gradient(circle at 50% 30%,#2a1a6e 0%,#0b0f1a 70%)"></div>
+  <div class="abs" id="s5a" style="inset:0">
+    <div class="abs" style="left:0;right:0;top:120px;text-align:center;font-size:84px;font-weight:900;line-height:1.08;padding:0 40px">
+      Pare de deixar<br><span class="gold">dinheiro na mesa</span></div>
+    <div class="abs" id="card5" style="left:140px;top:520px;width:800px;height:900px;border-radius:44px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)">
+      <img src="assets/placas.jpg" style="position:absolute;left:-160px;top:-250px;width:1120px;height:1991px">
+    </div>
+    <div id="stars5" class="abs" style="left:0;right:0;top:1450px;text-align:center;font-size:100px;color:#fbbc04;letter-spacing:10px"></div>
+  </div>
+  <div class="abs" id="s5b" style="inset:0;opacity:0">
+    <div class="abs" style="left:0;right:0;top:150px;text-align:center;font-size:150px;font-weight:900;line-height:1.0">
+      Peça a sua<br><span class="gold">agora!</span></div>
+    <div class="abs" style="left:190px;top:540px;width:700px;height:700px;border-radius:44px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)" id="card5b">
+      <img src="assets/placas.jpg" style="position:absolute;left:-150px;top:-140px;width:1050px;height:1867px">
+    </div>
+    <svg id="arrow" class="abs" style="left:440px;top:1260px" width="200" height="200" viewBox="0 0 200 200"><path d="M100 10v130M40 90l60 70 60-70" stroke="#fbbc04" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="pill" id="chipA" style="left:130px;top:1440px;background:#fff;color:#111;padding:22px 46px;font-size:50px;opacity:0">Link da bio</div>
+    <div class="pill" id="chipB" style="left:620px;top:1440px;background:#e1306c;padding:22px 46px;font-size:50px;opacity:0">Direct</div>
+  </div>
+  <div class="abs" id="s5c" style="inset:0;opacity:0;background:radial-gradient(circle at 50% 40%,#3b1d9c 0%,#0b0f1a 75%)">
+    <img src="../marca/nfcliente-logo-escuro.png" style="position:absolute;left:190px;top:560px;width:700px">
+    <div id="stars5c" class="abs" style="left:0;right:0;top:880px;text-align:center;font-size:110px;color:#fbbc04;letter-spacing:12px"></div>
+    <div class="abs" style="left:0;right:0;top:1060px;text-align:center;font-size:78px;font-weight:900;line-height:1.1">Bora lotar<br>a sua agenda!</div>
+  </div>
+</div>
+
+<div id="cap"><span></span></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const P=(t,a,b)=>clamp((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3), eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eb=x=>{const c=1.70158,d=c+1;return 1+d*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+function place(el,x,y,s=1,r=0){el.style.transform=`translate(${x-210}px,${y-430}px) rotate(${r}deg) scale(${s})`}
+function stars(n,tot=5){return `<i>${'★'.repeat(n)}</i><em>${'★'.repeat(tot-n)}</em>`}
+function card(top,name,r,n,sub,hl,mark){
+  const rate=n===0?`<span style="color:#9aa0a6">Sem avaliações</span> <em>★★★★★</em>`:`${r} ${stars(Math.round(r))} (${n})`;
+  return `<div class="card" style="top:${top}px;${hl?'border-color:#1a73e8;background:#e8f0fe;':''}">
+    <b>${mark?`<span style="color:#1a73e8">${mark}</span> `:''}${name}</b><div class="r">${rate}</div><small>${sub}</small></div>`}
+
+// ------ montagens estáticas
+$('l1').innerHTML=card(0,'Sabor &amp; Cia','4,2',87,'Restaurante · Aberto')
+  +card(124,'Cantina do Zé','4,9',500,'Restaurante · Aberto até 23h',false)
+  +card(248,'Seu Negócio','0',0,'Restaurante · Aberto');
+$('cmpA').innerHTML=card(0,'Concorrente','4,9',500,'Restaurante · Aberto até 23h',true).replace('left:14px;right:14px;','left:0;right:0;height:140px;').replace('height:112px','height:140px');
+$('cmpB').innerHTML=card(0,'Seu Negócio','0',0,'Restaurante · Aberto').replace('left:14px;right:14px;','left:0;right:0;height:140px;').replace('height:112px','height:140px');
+$('cmpA').firstChild.style.cssText+=';height:140px;left:0;right:0';
+$('cmpB').firstChild.style.cssText+=';height:140px;left:0;right:0;opacity:.95';
+function face(c){return `<svg width="130" height="130" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="${c}"/><circle cx="35" cy="42" r="5.5" fill="#222"/><circle cx="65" cy="42" r="5.5" fill="#222"/><path d="M30 33l12 5M70 33l-12 5" stroke="#222" stroke-width="4" stroke-linecap="round"/><path d="M33 72Q50 56 67 72" stroke="#222" stroke-width="5" fill="none" stroke-linecap="round"/></svg>`}
+const reacts=[['#f4c58b','Zero avaliações? Não confio.'],['#e0a97a','Vou no que tem 4,9 estrelas.'],['#c98c63','Pesquisei e passei reto.']];
+$('faces').innerHTML=reacts.map((r,i)=>`<div class="abs" id="fc${i}" style="left:60px;top:${640+i*230}px;width:960px;height:190px;display:flex;align-items:center;gap:24px">${face(r[0])}
+  <div style="background:#fff;color:#111;border-radius:34px;padding:26px 34px;font-size:40px;font-weight:800;flex:1">${r[1]}</div></div>`).join('');
+$('starrow').innerHTML=[0,1,2,3,4].map(i=>`<span id="st${i}" style="color:#dadce0">★</span>`).join('');
+$('rv').textContent='0,0';
+const sent="Atendimento incrível! Recomendo muito, voltarei com certeza.";
+
+const NARR=[[0,3,'Sabe por que o seu concorrente está roubando seus clientes todos os dias no Google?'],
+[3.2,8,'Porque na internet, quem tem mais estrelinhas leva o cliente.'],
+[8,15,'Se o seu restaurante, clínica ou loja não tem dezenas de avaliações positivas, você simplesmente não existe na sua região.'],
+[15,22,'Mas você pode virar esse jogo hoje mesmo com a Placa de Avaliação do Google.'],
+[22,30,'A ferramenta definitiva para transformar clientes satisfeitos em marketing gratuito.'],
+[30,32.8,'Sem atrito, sem links complicados.'],
+[32.8,36,'O cliente amou o atendimento? Ele só precisa aproximar o celular ou ler o QR Code.'],
+[36,40,'Pronto! Você ganha 5 estrelas, sobe no ranking do Google e atrai novos clientes no piloto automático.'],
+[40,47,'Pare de deixar dinheiro na mesa e domine as pesquisas na sua cidade!'],
+[47,55,'Clique no link da minha bio agora ou me mande um Direct para encomendar a sua placa personalizada.'],
+];
+const SC=[[0,3],[3,15],[15,30],[30,40],[40,60]];
+const scenes=['s1','s2','s3','s4','s5'].map($);
+
+function setT(t){
+  // visibilidade de cenas com fade
+  SC.forEach(([a,b],i)=>{
+    const f=Math.min(P(t,a,a+.25),1-P(t,b-.2,b));
+    scenes[i].style.opacity=(t>=a&&t<b)?(i===0?1-P(t,b-.2,b):Math.max(f,0)):0;
+  });
+  scenes[0].style.opacity=t<3?1-P(t,2.8,3):0;
+  // legenda
+  const cap=$('cap');let line=NARR.find(n=>t>=n[0]&&t<n[1]);
+  if(line){cap.firstChild.textContent=line[2];cap.style.opacity=Math.min(P(t,line[0],line[0]+.2),1-P(t,line[1]-.15,line[1]))}else cap.style.opacity=0;
+  if(t<3)s1(t);else if(t<15)s2(t-3);else if(t<30)s3(t-15);else if(t<40)s4(t-30);else s5(t-40);
+}
+
+// ---------- CENA 1
+function s1(t){
+  const z=1+.06*P(t,0,3);
+  $('s1top').style.transform=`scale(${z})`;$('s1top').style.transformOrigin='50% 100%';
+  $('owner').setAttribute('transform',`translate(120 ${Math.sin(t*3)*3})`);
+  const sc=.7;place($('ph1'),540,330,sc*(1+.04*P(t,1.7,2.6)),0);
+  // tap no concorrente
+  const tp=$('tap');const k=P(t,1.5,2.4);
+  const phx=540,phy=1260;
+  tp.style.left=(190-45)+'px';tp.style.top=(124+56+112-45+50)+'px';
+  tp.style.opacity=k>0&&k<1?Math.sin(k*Math.PI):0;tp.style.transform=`scale(${.6+.9*k})`;
+  const hl=P(t,1.9,2.2);
+  $('l1').children[1].style.borderColor=hl>0?'#1a73e8':'#e8eaed';
+  $('l1').children[1].style.background=hl>0?'#e8f0fe':'#fff';
+  $('s1vs').style.transform=`translate(-50%,-50%) scale(${eb(P(t,.1,.6))})`;
+  $('s1bot').style.transform=`translateY(${(1-eo(P(t,0,.4)))*40}px)`;
+}
+
+// ---------- CENA 2
+function s2(t){
+  const neon=t<5.2;
+  $('s2neon').style.opacity=t<5.2?1:Math.max(0,1-P(t,5.2,5.6));
+  $('s2bgA').style.opacity=t<5.2?1:Math.max(0,1-P(t,5.2,5.6));
+  const fl=(t<3.6)?(Math.sin(t*55)>-.55||t<.5?1:.3):1;
+  $('s2neon').style.opacity=($('s2neon').style.opacity)*fl;
+  [['n1',.1],['n2',.7],['n3',1.2],['n4',1.7],['n5',2.3]].forEach(([id,s])=>{
+    const k=eb(P(t,s,s+.35));$(id).style.opacity=P(t,s,s+.1);$(id).style.transform=`scale(${.6+.4*k}) translateX(${(Math.sin(t*50)*2*(t>s&&t<s+.4?1:0))}px)`;
+  });
+  const b=P(t,5.4,5.9);$('s2b').style.opacity=b;
+  // cards
+  $('cmpA').style.transform=`translateX(${(1-eo(P(t,5.8,6.4)))*-1100}px)`;
+  $('cmpB').style.transform=`translateX(${(1-eo(P(t,6.2,6.8)))*1100}px)`;
+  $('cmpB').style.filter=`grayscale(${P(t,6.8,7.6)}) brightness(${1-.25*P(t,6.8,7.6)})`;
+  for(let i=0;i<3;i++){
+    const s=7.6+i*1.5;const el=$('fc'+i);
+    const a=eo(P(t,s,s+.45));const out=eo(P(t,11.2+i*.3,11.9+i*.3));
+    el.style.opacity=a*(1-out);el.style.transform=`translateX(${(1-a)*-300+out*400}px)`;
+  }
+}
+
+// ---------- CENA 3
+function s3(t){
+  const z=1+.55*eio(P(t,0,8));
+  $('photo').style.transform=`scale(${t<8?z:1.55})`;
+  $('s3title').style.opacity=Math.min(P(t,.3,.9),1-P(t,5.2,5.8));
+  $('s3title').style.transform=`translateY(${(1-eo(P(t,.3,.9)))*-40}px)`;
+  const dark=.78*P(t,9.5,10.5)*(1-P(t,14.7,15));
+  $('s3dark').style.background=`rgba(5,8,20,${dark})`;
+  // iPhone approach
+  const ph=$('ph3');
+  const a=eio(P(t,5.5,8.0));         // aproxima
+  const open=eio(P(t,9.5,10.5));     // sobe/amplia
+  const sx=lerp(950,360,a),sy=lerp(2150,1290,a),ss=lerp(.55,.5,a),sr=lerp(18,-8,a);
+  const x=lerp(sx,540,open),y=lerp(sy,900,open),s=lerp(ss,.95,open),r=lerp(sr,0,open);
+  place(ph,x,y,s,r);
+  ph.style.opacity=P(t,5.5,6);
+  // ondas NFC
+  const rip=$('ripples');let h='';
+  if(t>8&&t<10){for(let i=0;i<3;i++){const k=((t-8)*1.3+i*.33)%1;h+=`<div class="abs" style="left:${187-170*k-0}px;top:${1320-170*k}px;width:${340*k}px;height:${340*k}px;border-radius:50%;border:8px solid rgba(251,188,4,${1-k});"></div>`}}
+  rip.innerHTML=h;
+  $('s3tag').style.opacity=Math.min(P(t,8.3,8.8),1-P(t,9.6,10));
+  $('nfcban').style.top=(lerp(-120,40,eo(P(t,8.4,9))))+'px';
+  const home=1-P(t,9.4,9.8);$('home').style.opacity=home;$('rev').style.opacity=P(t,9.4,9.8);
+  // estrelas
+  for(let i=0;i<5;i++){const k=P(t,10.8+i*.45,11.1+i*.45);const e=$('st'+i);e.style.color=k>0?'#fbbc04':'#dadce0';e.style.transform=`scale(${1+.35*Math.sin(Math.PI*clamp(k))})`;}
+  const n=Math.floor(P(t,13.2,14.6)*sent.length);$('txt').textContent=sent.slice(0,n)+(n<sent.length&&t>13.2?'|':'');
+  const pub=P(t,14.7,15);$('pubbtn').style.transform=`scale(${1-.06*Math.sin(Math.PI*P(t,14.2,14.5))})`;
+  $('sent').style.opacity=P(t,14.55,14.85);
+}
+// ---------- CENA 4
+function s4(t){
+  // QR 0-4
+  const qrIn=1-P(t,3.7,4.0);
+  $('s4qr').style.opacity=qrIn;
+  place($('ph4'),540,1000,1.05*(1+.03*P(t,0,3.5)),0);
+  $('scanline').style.top=(300+230*(.5+.5*Math.sin(t*3.2)))+'px';
+  const ok=P(t,2.1,2.4);
+  $('vf').style.borderColor=ok>0?'#34a853':'#fff';$('vf').style.transform=`scale(${1-.06*ok})`;
+  $('scanline').style.opacity=1-ok;
+  $('qrbanner').style.bottom=(lerp(-140,34,eo(P(t,2.5,3.1))))+'px';
+  // gráfico 4-7.2
+  const ch=P(t,3.9,4.2)*(1-P(t,7.1,7.3));
+  $('s4chart').style.opacity=ch;
+  const g=eio(P(t,4.1,6.8));
+  $('cpr').setAttribute('width',60+840*g);
+  // ponto na curva aproximado: interpola por x e y
+  const dx=60+840*g;const ys=[[60,580],[300,500],[520,380],[780,190],[900,90]];
+  let dy=580;for(let i=0;i<ys.length-1;i++){const[a,b]=[ys[i],ys[i+1]];if(dx>=a[0]&&dx<=b[0]){dy=lerp(a[1],b[1],(dx-a[0])/(b[0]-a[0]));break;}}
+  const dot=$('dot');dot.setAttribute('cx',dx);dot.setAttribute('cy',dy);
+  $('rv').textContent=(lerp(3.0,4.9,g)).toFixed(1).replace('.',',');
+  $('cv').textContent=Math.round(lerp(0,512,g));
+  [['pop1',4.7],['pop2',5.6],['pop3',6.4]].forEach(([id,s])=>{const k=eb(P(t,s,s+.35));$(id).style.opacity=P(t,s,s+.1)*(1-P(t,7.1,7.3));$(id).style.transform=`scale(${.4+.6*k}) rotate(${(id=='pop2'?2:-3)}deg)`});
+  // ranking 7.2-10
+  const rk=P(t,7.1,7.4);$('s4rank').style.opacity=rk;
+  place($('ph5'),540,1000,1.45,0);
+  const m=eio(P(t,7.9,9.1));
+  const L=[['Sabor &amp; Cia','4,2',87,'Restaurante · Aberto'],['Cantina do Zé','4,9',500,'Restaurante · Aberto até 23h']];
+  const mine=P(t,7.9,9.1);const cnt=Math.round(lerp(12,512,mine));const r=(lerp(3.8,4.9,mine)).toFixed(1).replace('.',',');
+  const items=[
+    {k:'a',top:lerp(0,248,m),html:(top)=>card(top,'Seu Negócio',r,cnt,'Restaurante · Aberto',m>.5,'#'+(m>.5?1:3)),z:3},
+    {k:'b',top:lerp(124,0,m),html:(top)=>card(top,'Cantina do Zé','4,9',500,'Restaurante · Aberto até 23h',false,m>.5?'#2':'#1')},
+    {k:'c',top:lerp(248,124,m),html:(top)=>card(top,'Sabor &amp; Cia','4,2',87,'Restaurante · Aberto',false,m>.5?'#3':'#2')}];
+  items[0].top=lerp(248,0,m);items[1].top=lerp(0,124,m);items[2].top=lerp(124,248,m);
+  items[0].html=top=>card(top,'Seu Negócio',r,cnt,'Restaurante · Aberto',m>.5,m>.5?'#1':'#3');
+  items[1].html=top=>card(top,'Cantina do Zé','4,9',500,'Restaurante · Aberto até 23h',false,m>.5?'#2':'#1');
+  items[2].html=top=>card(top,'Sabor &amp; Cia','4,2',87,'Restaurante · Aberto',false,m>.5?'#3':'#2');
+  $('l5').innerHTML=items.map(i=>i.html(i.top)).join('');
+}
+// ---------- CENA 5
+function s5(t){
+  const a=1-P(t,6.6,7.0);
+  $('s5a').style.opacity=a;
+  $('card5').style.transform=`translateY(${Math.sin(t*2)*12}px) scale(${1+.05*P(t,0,6.6)})`;
+  $('card5').style.opacity=P(t,.1,.6);
+  let st='';for(let i=0;i<5;i++){const k=eb(P(t,1+i*.35,1.4+i*.35));st+=`<span style="display:inline-block;transform:scale(${k});opacity:${P(t,1+i*.35,1.1+i*.35)}">★</span>`}
+  $('stars5').innerHTML=st;
+  $('s5b').style.opacity=P(t,6.6,7.0)*(1-P(t,14.8,15.2));
+  $('card5b').style.transform=`translateY(${Math.sin(t*2)*10}px) scale(${eb(P(t,7,7.7))})`;
+  $('arrow').style.transform=`translateY(${Math.abs(Math.sin(t*5))*28}px)`;
+  $('arrow').style.opacity=P(t,7.6,8.0);
+  const ca=eb(P(t,8,8.6)),cb=eb(P(t,10,10.6));
+  $('chipA').style.opacity=P(t,8,8.15);$('chipA').style.transform=`scale(${ca})`;
+  $('chipB').style.opacity=P(t,10,10.15);$('chipB').style.transform=`scale(${cb})`;
+  $('s5c').style.opacity=P(t,14.8,15.3);
+  let s2='';for(let i=0;i<5;i++){const k=eb(P(t,15.3+i*.2,15.6+i*.2));s2+=`<span style="display:inline-block;transform:scale(${k})">★</span>`}
+  $('stars5c').innerHTML=s2;
+}
+setT(0);
+</script>
+</body>
+</html>
