@@ -12,6 +12,12 @@ Cada versão publicada ganha um **ponto de restauração** no GitHub, um branch 
 
 Quando uma versão mexer no banco, ela também traz um script para desfazer a mudança. Os scripts ficam em `supabase/versoes/`.
 
+## v1.7.8 · 28/10/2026: símbolo NFC centralizado na logo (ponto de restauração `versao-1.7.8`)
+
+- **Logo:** o símbolo NFC (ponto e ondas) agora fica no centro do chaveiro, com a mesma margem dos dois lados e em cima e embaixo. Antes estava mais para baixo e para a esquerda.
+- **Arquivos atualizados:** ícone da aba (`favicon.ico` e `img/`), ícone do celular e todo o kit em `marca/`.
+- **Banco: não mudou.**
+
 ## v1.7.7 · 26/10/2026: logo NFCliente (ponto de restauração `versao-1.7.7`)
 
 - **Publicada em 26/10/2026:** os 41 arquivos do site, do painel e da página do cliente no ar; favicon e ícone conferidos em nfcliente.com.br, admin e cliente (200).
