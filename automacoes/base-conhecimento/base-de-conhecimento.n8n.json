@@ -1,0 +1,596 @@
+{
+  "name": "Base de conhecimento",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "base-conhecimento",
+        "options": {}
+      },
+      "id": "5d800f14-2720-52cb-b97a-0c8a853e8163",
+      "name": "Chatwoot: conversa resolvida",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "c209fd20-ef09-51ce-bad3-8e72258f0890"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "027eb444-bfc5-5f85-9f34-eb09aaaad16d",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "conversation_status_changed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "f75162ba-b1f7-590e-ae0d-1a1f497980c4",
+              "leftValue": "={{ $json.body.status }}",
+              "rightValue": "resolved",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4b75433f-7528-5a80-ae1b-49852d226e79",
+      "name": "É resolvida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "564c3b4b-b6f4-56d0-bf58-c219cb74573a",
+              "name": "chatwoot_url",
+              "type": "string",
+              "value": "https://SEU-CHATWOOT.exemplo.com"
+            },
+            {
+              "id": "bfb32a44-e459-58e3-8c7b-ba490ecc3c07",
+              "name": "account_id",
+              "type": "string",
+              "value": "1"
+            },
+            {
+              "id": "eb329ce7-de74-5985-b260-059825d6e4fa",
+              "name": "conversa_id",
+              "type": "string",
+              "value": "={{ $('Chatwoot: conversa resolvida').item.json.body.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a05c3137-be91-513a-9771-f64345fe3a77",
+      "name": "Configuração",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.chatwoot_url }}/api/v1/accounts/{{ $json.account_id }}/conversations/{{ $json.conversa_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "30659f0a-e5d0-5ffb-b884-c339004912fb",
+      "name": "Buscar mensagens",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROCAR",
+          "name": "Chatwoot api_access_token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Junta cada pergunta do cliente com a(s) resposta(s) que vieram depois.\n// Tira dados pessoais antes de gravar (LGPD).\nconst conversa = $('Configuração').first().json.conversa_id;\nconst msgs = ($input.first().json.payload || [])\n  .filter(m => !m.private && (m.message_type === 0 || m.message_type === 1) && (m.content || '').trim())\n  .sort((a, b) => a.created_at - b.created_at);\n\nconst limpar = t => t\n  .replace(/[\\w.+-]+@[\\w-]+\\.[\\w.-]+/g, '[email]')\n  .replace(/\\b\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}\\b/g, '[cpf]')\n  .replace(/\\b\\d{2}\\.?\\d{3}\\.?\\d{3}\\/?\\d{4}-?\\d{2}\\b/g, '[cnpj]')\n  .replace(/(\\+?55\\s?)?\\(?\\d{2}\\)?\\s?9?\\d{4}[-\\s]?\\d{4}\\b/g, '[telefone]')\n  .replace(/\\s+/g, ' ').trim();\n\nconst saida = [];\nlet perg = [], resp = [];\nconst fechar = () => {\n  if (perg.length && resp.length) {\n    saida.push({ json: {\n      data: new Date().toISOString().slice(0, 10),\n      conversa_id: String(conversa),\n      pergunta: limpar(perg.join(' ')),\n      resposta: limpar(resp.join(' ')),\n      processado: 'não',\n    }});\n  }\n  perg = []; resp = [];\n};\nfor (const m of msgs) {\n  if (m.message_type === 0) { if (resp.length) fechar(); perg.push(m.content); }\n  else if (perg.length) resp.push(m.content);\n}\nfechar();\nreturn saida;"
+      },
+      "id": "6ce01304-79c7-55e7-9ba1-7e761b481386",
+      "name": "Montar pares pergunta/resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ID_DA_PLANILHA_LOG"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Log"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "77ab7f98-8e99-5e89-9446-fdcce944a55f",
+      "name": "Gravar no log bruto",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1100,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TROCAR",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 23
+            }
+          ]
+        }
+      },
+      "id": "18062f9d-3bc2-5576-8495-c6d7f4caf16a",
+      "name": "Todo dia às 23h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "ID_DO_GOOGLE_DOC"
+      },
+      "id": "63bbfc14-e12f-5228-831c-7c0273055401",
+      "name": "Ler FAQ atual",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        220,
+        400
+      ],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "TROCAR",
+          "name": "Google Docs"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ID_DA_PLANILHA_LOG"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Log"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "processado",
+              "lookupValue": "não"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0d4937f2-f566-5cd6-b0bd-0c662c88e0be",
+      "name": "Ler log pendente",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TROCAR",
+          "name": "Google Sheets"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Monta o pedido para a IA com o FAQ atual + o que chegou desde a última rodada.\nconst faq = ($('Ler FAQ atual').first().json.content || '').slice(-30000);\nconst linhas = $input.all().map(i => i.json);\nconst lote = linhas.slice(0, 300); // limite por rodada; o resto fica para a próxima\nconst dialogos = lote.map((l, n) => `#${n + 1}\\nP: ${l.pergunta}\\nR: ${l.resposta}`).join('\\n\\n');\n\nconst prompt = `Você mantém a base de conhecimento (FAQ) do atendimento da NFCliente (chaveiros NFC com página de links).\n\nFAQ ATUAL (não repita nada que já esteja aqui):\n<faq>\n${faq || '(vazio)'}\n</faq>\n\nNOVOS DIÁLOGOS (P = pergunta do cliente, R = resposta dada):\n<dialogos>\n${dialogos}\n</dialogos>\n\nTarefa:\n1. Agrupe perguntas parecidas pelo sentido.\n2. Mantenha só as que se repetem (2 ou mais vezes) OU que sejam dúvidas gerais úteis (preço, prazo, como usar, pagamento, suporte) com resposta completa.\n3. Ignore saudações, assuntos de um único cliente, reclamações pessoais e respostas incompletas ou incorretas.\n4. Escreva uma resposta única, clara e fiel ao que foi respondido. Não invente preços, prazos nem regras.\n5. Pule o que já está no FAQ atual.\n6. Nunca inclua nomes, telefones, e-mails ou outros dados pessoais.\n\nResponda SOMENTE com JSON, sem texto fora dele:\n{\"entradas\":[{\"tema\":\"...\",\"pergunta\":\"...\",\"resposta\":\"...\",\"ocorrencias\":2}]}\nSe não houver nada novo, responda {\"entradas\":[]}.`;\n\nreturn [{ json: { prompt, total: lote.length } }];"
+      },
+      "id": "6cd00b16-5213-5d01-af53-69e04ac4f8f0",
+      "name": "Montar pedido à IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-5-5', max_tokens: 4000, messages: [{ role: 'user', content: $json.prompt }] }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "5fbc6405-0981-55ad-8dc2-174d3814bfa0",
+      "name": "IA: extrair perguntas frequentes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        400
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROCAR",
+          "name": "Anthropic x-api-key"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Converte a resposta da IA no texto que será acrescentado ao Doc.\nconst bruto = $input.first().json.content?.[0]?.text || '{\"entradas\":[]}';\nlet entradas = [];\ntry {\n  entradas = JSON.parse(bruto.replace(/^```(?:json)?\\s*|\\s*```$/g, '').trim()).entradas || [];\n} catch (e) {\n  throw new Error('A IA não devolveu JSON válido: ' + bruto.slice(0, 300));\n}\nentradas = entradas.filter(e => e.pergunta && e.resposta);\n\nconst hoje = new Date().toISOString().slice(0, 10);\nconst texto = entradas.map(e =>\n  `\\nP: ${e.pergunta}\\nR: ${e.resposta}\\nTema: ${e.tema || 'Geral'} · vista ${e.ocorrencias || 1}x · incluída em ${hoje}\\n`\n).join('');\n\nreturn [{ json: { novas: entradas.length, texto } }];"
+      },
+      "id": "a593b310-2058-5cae-b9c8-fc557b664d57",
+      "name": "Ler resposta da IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "610c3c35-110d-5838-852d-9cb895a95147",
+              "leftValue": "={{ $json.novas }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0b962d6f-d99f-5264-8443-0e1d85702c35",
+      "name": "Tem novidade?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "ID_DO_GOOGLE_DOC",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.texto }}",
+              "insertSegment": "body",
+              "locationChoice": "endOfSegment"
+            }
+          ]
+        }
+      },
+      "id": "037be84f-f8e1-5988-9d12-ae418ffdfdce",
+      "name": "Acrescentar ao FAQ",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        340
+      ],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "TROCAR",
+          "name": "Google Docs"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Devolve só as linhas que entraram neste lote, para marcar como processadas.\nconst lote = $('Ler log pendente').all().slice(0, 300);\nreturn lote.map(i => ({ json: { row_number: i.json.row_number, processado: 'sim' } }));"
+      },
+      "id": "5cf45f67-72ed-54e8-abcc-0874169a713e",
+      "name": "Linhas do lote",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ID_DA_PLANILHA_LOG"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "processado": "={{ $json.processado }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "0e175868-be2a-59d6-8831-925742e18ab0",
+      "name": "Marcar como processado",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1980,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TROCAR",
+          "name": "Google Sheets"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Chatwoot: conversa resolvida": {
+      "main": [
+        [
+          {
+            "node": "É resolvida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É resolvida?": {
+      "main": [
+        [
+          {
+            "node": "Configuração",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuração": {
+      "main": [
+        [
+          {
+            "node": "Buscar mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar mensagens": {
+      "main": [
+        [
+          {
+            "node": "Montar pares pergunta/resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar pares pergunta/resposta": {
+      "main": [
+        [
+          {
+            "node": "Gravar no log bruto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Todo dia às 23h": {
+      "main": [
+        [
+          {
+            "node": "Ler FAQ atual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler FAQ atual": {
+      "main": [
+        [
+          {
+            "node": "Ler log pendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler log pendente": {
+      "main": [
+        [
+          {
+            "node": "Montar pedido à IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar pedido à IA": {
+      "main": [
+        [
+          {
+            "node": "IA: extrair perguntas frequentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA: extrair perguntas frequentes": {
+      "main": [
+        [
+          {
+            "node": "Ler resposta da IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler resposta da IA": {
+      "main": [
+        [
+          {
+            "node": "Tem novidade?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acrescentar ao FAQ": {
+      "main": [
+        [
+          {
+            "node": "Linhas do lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linhas do lote": {
+      "main": [
+        [
+          {
+            "node": "Marcar como processado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem novidade?": {
+      "main": [
+        [
+          {
+            "node": "Acrescentar ao FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Linhas do lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}
