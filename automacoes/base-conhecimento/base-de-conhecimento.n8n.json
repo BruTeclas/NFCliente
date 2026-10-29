@@ -134,7 +134,7 @@
         "documentId": {
           "__rl": true,
           "mode": "id",
-          "value": "ID_DA_PLANILHA_LOG"
+          "value": "1qpwCIAi-S0Y1MMVtNzcMVy-M1mWF0eMJLqF1NTvH9ro"
         },
         "sheetName": {
           "__rl": true,
@@ -186,7 +186,7 @@
     {
       "parameters": {
         "operation": "get",
-        "documentURL": "ID_DO_GOOGLE_DOC"
+        "documentURL": "1Tw2buygK3l0Z6dgH3Gunp8W4FIQkMsVfrN8o693xCIM"
       },
       "id": "63bbfc14-e12f-5228-831c-7c0273055401",
       "name": "Ler FAQ atual",
@@ -210,7 +210,7 @@
         "documentId": {
           "__rl": true,
           "mode": "id",
-          "value": "ID_DA_PLANILHA_LOG"
+          "value": "1qpwCIAi-S0Y1MMVtNzcMVy-M1mWF0eMJLqF1NTvH9ro"
         },
         "sheetName": {
           "__rl": true,
@@ -344,7 +344,7 @@
     {
       "parameters": {
         "operation": "update",
-        "documentURL": "ID_DO_GOOGLE_DOC",
+        "documentURL": "1Tw2buygK3l0Z6dgH3Gunp8W4FIQkMsVfrN8o693xCIM",
         "actionsUi": {
           "actionFields": [
             {
@@ -390,7 +390,7 @@
         "documentId": {
           "__rl": true,
           "mode": "id",
-          "value": "ID_DA_PLANILHA_LOG"
+          "value": "1qpwCIAi-S0Y1MMVtNzcMVy-M1mWF0eMJLqF1NTvH9ro"
         },
         "sheetName": {
           "__rl": true,

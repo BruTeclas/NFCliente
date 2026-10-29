@@ -31,7 +31,7 @@ Arquivo para importar: [`base-de-conhecimento.n8n.json`](base-de-conhecimento.n8
    - Google Sheets e Google Docs (OAuth2).
    - `Buscar mensagens`: *Header Auth* com nome `api_access_token` e o token do seu usuário do Chatwoot (Perfil → Token de acesso).
    - `IA: extrair perguntas frequentes`: *Header Auth* com nome `x-api-key` e a chave da Anthropic.
-5. **IDs**: troque `ID_DA_PLANILHA_LOG` e `ID_DO_GOOGLE_DOC` (o trecho entre `/d/` e `/edit` do link) nos nós do Sheets e do Docs.
+5. **IDs**: troque `1qpwCIAi-S0Y1MMVtNzcMVy-M1mWF0eMJLqF1NTvH9ro` e `1Tw2buygK3l0Z6dgH3Gunp8W4FIQkMsVfrN8o693xCIM` (o trecho entre `/d/` e `/edit` do link) nos nós do Sheets e do Docs.
 6. **Configuração** (nó Set): ajuste `chatwoot_url` e `account_id`.
 7. **Chatwoot**: *Configurações → Integrações → Webhooks* → adicione a URL de produção do nó `Chatwoot: conversa resolvida` e marque só o evento **Status da conversa alterado**.
 8. Teste: resolva uma conversa de teste, veja a linha no `Log`, rode o fluxo da tarde manualmente e confira o Doc. Depois **ative** o workflow.
