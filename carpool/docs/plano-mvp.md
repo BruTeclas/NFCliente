@@ -93,3 +93,11 @@ Armário, cofre, acesso sem chave, telemetria, multas, abastecimento, rateio de 
 1. Posso criar o projeto Supabase novo? (Vai ser necessário escolher a organização e o custo.)
 2. Já existe cliente-piloto? Mudaria a ordem se ele exigir algo cedo (ex.: portaria 24h).
 3. Nome do produto e domínio, para configurar e-mails e o PWA.
+
+## Decisões confirmadas
+- Projeto Supabase criado: `carpool-corporativo` (ref `lsqssnerbocisxmhxfag`, região `sa-east-1`, organização BruTeclas).
+- Sem cliente-piloto por enquanto: segue a ordem das etapas acima.
+- Sem nome definitivo nem domínio: o PWA usa o nome provisório "Car Pool Corporativo". Teste em ambiente de desenvolvimento e publicação depois.
+
+## Andamento
+- [x] Etapa 0: projeto Supabase, app Vite/React/TS com PWA, cliente Supabase, build e lint passando.
